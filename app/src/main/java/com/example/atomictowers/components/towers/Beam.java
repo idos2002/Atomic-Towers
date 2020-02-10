@@ -6,11 +6,16 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.atomictowers.components.atoms.Atom;
+import com.example.atomictowers.data.game.WeaponAbility;
 import com.example.atomictowers.util.Vector2;
 
 public class Beam extends Weapon {
 
     private Vector2 mTarget;
+
+    public Beam(int id, WeaponAbility ability) {
+        super(id, ability);
+    }
 
     @Override
     void damage(@NonNull Atom atom) {

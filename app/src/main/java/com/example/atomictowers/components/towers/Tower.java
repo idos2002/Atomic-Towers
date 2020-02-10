@@ -10,9 +10,23 @@ import com.example.atomictowers.util.Vector2;
 
 public abstract class Tower implements Component {
 
-    protected Vector2 mPosition;
+    private final int mId;
+
+    /**
+     * The position in the game grid (a pair of 2 indices).
+     */
+    protected final Vector2 mPosition;
 
     protected Weapon mWeapon;
+
+    protected Tower(int id, Vector2 position) {
+        this.mId = id;
+        this.mPosition = position;
+    }
+
+    public int getId() {
+        return mId;
+    }
 
     @Override
     public void update() {

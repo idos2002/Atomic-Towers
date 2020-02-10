@@ -11,7 +11,20 @@ import com.example.atomictowers.util.Vector2;
 // TODO: Will be a json data file object
 public abstract class Weapon implements Component {
 
-    protected WeaponAbility ability;
+    private final int mId;
+
+    protected final WeaponAbility ability;
+
+    // TODO: Didn't notice the TODO above, should remove this constructor
+    //  or create a data object in data.game package
+    public Weapon(int id, WeaponAbility ability) {
+        mId = id;
+        this.ability = ability;
+    }
+
+    public int getId() {
+        return mId;
+    }
 
     abstract void damage(@NonNull Atom atom);
 

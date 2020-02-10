@@ -20,9 +20,13 @@ public class Atom implements Component {
 
     private static final String TAG = Atom.class.getSimpleName();
 
+    private static final int BASE_SPEED = 1;
+
     private Game mGame;
 
     private final CompositeDisposable mCompositeDisposable = new CompositeDisposable();
+
+    private final int mId;
 
     private final BehaviorSubject<String> mName = BehaviorSubject.createDefault("");
     private final BehaviorSubject<String> mSymbol = BehaviorSubject.createDefault("");
@@ -39,20 +43,24 @@ public class Atom implements Component {
     private int mAtomicNumber;
 
     private BehaviorSubject<Vector2> mPosition = BehaviorSubject.createDefault(Vector2.ZERO);
-    private Vector2 mVelocity = new Vector2(1, 1);
+    private Vector2 mVelocity;
 
     private AtomDrawable mDrawable;
     private final BehaviorSubject<Integer> mColor = BehaviorSubject.createDefault(Color.BLACK);
     private final BehaviorSubject<Float> mRadius = BehaviorSubject.createDefault(0f);
 
-    public Atom(Game game, AtomType type) {
+    public Atom(Game game, int id, AtomType type) {
         mGame = game;
+        mId = id;
         mAtomicNumber = type.protons;
         mStrength = (type.protons + type.neutrons) * Game.DAMAGE_MULTIPLIER;
 
         init(type);
 
         mDrawable = new AtomDrawable(this, mCompositeDisposable);
+
+        mCompositeDisposable.add(
+                mPosition.subscribe(position -> mGame.postPosition(this, position)));
     }
 
     private void init(AtomType type) {
@@ -60,12 +68,27 @@ public class Atom implements Component {
         mSymbol.onNext(type.symbol);
         mColor.onNext(Color.parseColor(type.colorString));
         mRadius.onNext(calculateRadius());
+
+        mVelocity = calculateVelocity();
     }
 
     private float calculateRadius() {
         float maxRadius = Math.min(mGame.getTileDimensions().x, mGame.getTileDimensions().y);
         // Radius of the atom should be at most 2/3 of tile width or height
         return maxRadius - maxRadius / (mAtomicNumber + 2);
+    }
+
+    @NonNull
+    private Vector2 calculateVelocity() {
+        // TODO: Configure direction vector - a unit vector describing the velocity direction
+        float sqrt2 = (float) Math.sqrt(2);
+        Vector2 direction = new Vector2(sqrt2 / 2, sqrt2 / 2);
+
+        return direction.scale(BASE_SPEED);
+    }
+
+    public int getId() {
+        return mId;
     }
 
     @NonNull
@@ -91,7 +114,6 @@ public class Atom implements Component {
     @Override
     public void update() {
         mPosition.onNext(mPosition.getValue().add(mVelocity));
-        // TODO: Post atom position to global the global Game object.
     }
 
     @Override
@@ -111,14 +133,14 @@ public class Atom implements Component {
 
     public void destroy() {
         mVelocity = Vector2.ZERO;
-        // TODO: Send request to remove instance from atom list to game object
+        mGame.removeComponent(mId);
         mCompositeDisposable.dispose();
     }
 
     private void changeElement() {
         mAtomicNumber--;
-        mCompositeDisposable.add(
-                mGame.gameRepository.getElements().subscribe(elements -> init(elements.get(mAtomicNumber))));
+        mCompositeDisposable.add(mGame.gameRepository.getElements()
+                .subscribe(elements -> init(elements.get(mAtomicNumber))));
     }
 
     @SuppressLint("DefaultLocale")

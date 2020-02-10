@@ -11,9 +11,9 @@ public class Molecule {
 
     @NonNull
     public Map<Atom, Integer> getAtoms() {
-        // TODO: Covert from String representation of element name to
+        // TODO: Convert from String representation of element name to
         //  an Atom object representation.
-        // TODO: Create a util funtion (in util file maybe) for converting String to Atom.
+        // TODO: Create a util function (in util file maybe) for converting String to Atom.
 
         throw new UnsupportedOperationException("Molecule.getAtoms() method not implemented");
     }

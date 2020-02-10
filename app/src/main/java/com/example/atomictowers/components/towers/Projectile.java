@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.atomictowers.components.atoms.Atom;
+import com.example.atomictowers.data.game.WeaponAbility;
 import com.example.atomictowers.util.Vector2;
 
 public class Projectile extends Weapon {
@@ -14,10 +15,12 @@ public class Projectile extends Weapon {
 
     protected Vector2 mVelocity;
 
-    public Projectile() {
-        super();
+    public Projectile(int id, WeaponAbility ability) {
+        super(id, ability);
+
         // TODO: Set velocity vector according to speed scalar.
     }
+
 
     @Override
     void damage(@NonNull Atom atom) {
