@@ -1,6 +1,5 @@
 package com.example.atomictowers.data.game;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.Log;
 
@@ -25,7 +24,12 @@ import io.reactivex.schedulers.Schedulers;
 
 public class GameRepository {
 
+    private static final String TAG = GameRepository.class.getSimpleName();
+
     private volatile static GameRepository INSTANCE;
+
+    static final String LEVELS_KEY = "levels";
+    static final String ISOTOPE_LEVELS_KEY = "isotope_levels";
 
     static final String ELEMENTS_KEY = "elements";
     static final String ISOTOPES_KEY = "isotopes";
@@ -53,41 +57,77 @@ public class GameRepository {
         return INSTANCE;
     }
 
-    @SuppressLint("CheckResult")
+    @NonNull
+    public Single<List<Level>> getLevels() {
+        if (mGameCache.getLevels() != null) {
+            return Single.just(mGameCache.getLevels());
+        }
+
+        return setAllLevelsInCache()
+            .andThen(Single.defer(() -> Single.just(mGameCache.getLevels())));
+    }
+
+    @NonNull
+    public Single<List<Level>> getIsotopeLevels() {
+        if (mGameCache.getIsotopeLevels() != null) {
+            return Single.just(mGameCache.getIsotopeLevels());
+        }
+
+        return setAllLevelsInCache()
+            .andThen(Single.defer(() -> Single.just(mGameCache.getIsotopeLevels())));
+    }
+
+    @NonNull
+    private Completable setAllLevelsInCache() {
+        return Single.fromCallable(() -> readResourceFile(R.raw.levels))
+            .flatMapCompletable(allLevelsJson -> {
+                Type mapType = new TypeToken<Map<String, List<Level>>>() {
+                }.getType();
+                Map<String, List<Level>> allLevelsMap = mGson.fromJson(allLevelsJson, mapType);
+
+                mGameCache.setAllLevels(allLevelsMap);
+
+                return Completable.complete();
+            })
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread());
+    }
+
     @NonNull
     public Single<List<AtomType>> getElements() {
         if (mGameCache.getElements() != null) {
             return Single.just(mGameCache.getElements());
         }
 
-        return setAtomTypesInCache().andThen(Single.defer(() -> Single.just(mGameCache.getElements())));
+        return setAtomTypesInCache()
+            .andThen(Single.defer(() -> Single.just(mGameCache.getElements())));
     }
 
-    @SuppressLint("CheckResult")
     @NonNull
     public Single<List<AtomType>> getIsotopes() {
         if (mGameCache.getIsotopes() != null) {
             return Single.just(mGameCache.getIsotopes());
         }
 
-        return setAtomTypesInCache().andThen(Single.defer(() -> Single.just(mGameCache.getIsotopes())));
+        return setAtomTypesInCache()
+            .andThen(Single.defer(() -> Single.just(mGameCache.getIsotopes())));
     }
 
+    @NonNull
     private Completable setAtomTypesInCache() {
         return Completable.fromRunnable(() -> {
             String atomTypesJson = null;
             try {
                 atomTypesJson = readResourceFile(R.raw.atom_types);
+                Log.d(TAG, "reading `atom_types.json` resource file...");
             } catch (IOException e) {
-                e.printStackTrace();
+                Log.e(TAG, "error reading `atom_types.json` from resources: ", e);
             }
-            Log.d("GameRepository", atomTypesJson);
 
             Type mapType = new TypeToken<Map<String, List<AtomType>>>() {
             }.getType();
 
             Map<String, List<AtomType>> atomTypes = mGson.fromJson(atomTypesJson, mapType);
-            Log.i("GameRepository2", atomTypes.toString());
 
             mGameCache.setAtomTypes(atomTypes);
         })

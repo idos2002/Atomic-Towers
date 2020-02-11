@@ -2,8 +2,6 @@ package com.example.atomictowers.screens.game;
 
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.SurfaceHolder;
@@ -15,7 +13,6 @@ import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.OnLifecycleEvent;
 
 import com.example.atomictowers.components.Game;
-import com.example.atomictowers.drawables.GameBackgroundDrawable;
 
 // TODO: Handle animations - would be better to animate the other fragments entrance
 //  and exit in a way that would seem like the GameView is animated,
@@ -28,8 +25,6 @@ public class GameView extends SurfaceView implements Runnable, LifecycleObserver
 
     private Thread mGameThread;
     private boolean mRunning;
-
-    private Drawable mBackgroundDrawable;
 
     private Game mGame;
 
@@ -51,8 +46,6 @@ public class GameView extends SurfaceView implements Runnable, LifecycleObserver
     private void init() {
         mSurfaceHolder = getHolder();
 
-        // Bounds will be set in the onSizeChanged method
-        mBackgroundDrawable = new GameBackgroundDrawable(9, 6);
         // TODO: Change coordinates to pathMatrix or something else that describes
         //  the background and its path for atoms
 
@@ -62,8 +55,6 @@ public class GameView extends SurfaceView implements Runnable, LifecycleObserver
     @Override
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
-
-        mBackgroundDrawable.setBounds(0, 0, w, h);
 
         if (mGame != null) {
             mGame.updateDimensions(w, h);
@@ -82,9 +73,6 @@ public class GameView extends SurfaceView implements Runnable, LifecycleObserver
                 try {
                     canvas = mSurfaceHolder.lockCanvas();
                     int saveCount = canvas.save();
-
-                    canvas.drawColor(Color.WHITE);
-                    mBackgroundDrawable.draw(canvas);
 
                     mGame.update();
                     mGame.draw(canvas);

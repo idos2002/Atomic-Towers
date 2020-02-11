@@ -1,6 +1,7 @@
 package com.example.atomictowers.components;
 
 import android.graphics.Canvas;
+import android.graphics.drawable.Drawable;
 import android.util.Log;
 import android.util.Pair;
 import android.util.SparseArray;
@@ -9,6 +10,7 @@ import androidx.annotation.NonNull;
 
 import com.example.atomictowers.components.atoms.Atom;
 import com.example.atomictowers.data.game.GameRepository;
+import com.example.atomictowers.drawables.LevelMapDrawable;
 import com.example.atomictowers.util.Vector2;
 
 import io.reactivex.disposables.CompositeDisposable;
@@ -32,6 +34,8 @@ public class Game {
 
     private Vector2 mTileDimensions;
 
+    private Drawable mLevelMapDrawable;
+
     /**
      * Used as a counter for {@link Component} ID's.
      * Should only be used by {@link #generateComponentId()}!
@@ -53,6 +57,13 @@ public class Game {
         mDimensions = dimensions;
         mTileDimensions = new Vector2(dimensions.x / 8, dimensions.y / 6);
 
+        mCompositeDisposable.add(gameRepository.getLevels().subscribe(
+            levels -> {
+                mLevelMapDrawable = new LevelMapDrawable(levels.get(0).map);
+                mLevelMapDrawable.setBounds(0, 0, (int) dimensions.x, (int) dimensions.y);
+            },
+            Throwable::printStackTrace));
+
         mCompositeDisposable.add(gameRepository.getElements().subscribe(atomTypes -> {
             addComponent(new Atom(this, 1, atomTypes.get(0)));
             addComponent(new Atom(this, 2, atomTypes.get(1)));
@@ -70,6 +81,10 @@ public class Game {
     }
 
     public void draw(@NonNull Canvas canvas) {
+        if (mLevelMapDrawable != null) {
+            mLevelMapDrawable.draw(canvas);
+        }
+
         for (int i = 0; i < mComponents.size(); i++) {
             int key = mComponents.keyAt(i);
             mComponents.get(key).draw(canvas);
