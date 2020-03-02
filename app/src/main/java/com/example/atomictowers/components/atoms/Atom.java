@@ -3,12 +3,14 @@ package com.example.atomictowers.components.atoms;
 import android.annotation.SuppressLint;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
-import com.example.atomictowers.components.Component;
 import com.example.atomictowers.components.Game;
+import com.example.atomictowers.components.KineticComponent;
 import com.example.atomictowers.data.game.AtomType;
+import com.example.atomictowers.data.game.LevelMap;
 import com.example.atomictowers.drawables.AtomDrawable;
 import com.example.atomictowers.util.Vector2;
 
@@ -16,17 +18,11 @@ import io.reactivex.Observable;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.subjects.BehaviorSubject;
 
-public class Atom implements Component {
+public class Atom extends KineticComponent {
 
     private static final String TAG = Atom.class.getSimpleName();
 
-    private static final int BASE_SPEED = 1;
-
-    private Game mGame;
-
     private final CompositeDisposable mCompositeDisposable = new CompositeDisposable();
-
-    private final int mId;
 
     private final BehaviorSubject<String> mName = BehaviorSubject.createDefault("");
     private final BehaviorSubject<String> mSymbol = BehaviorSubject.createDefault("");
@@ -42,58 +38,61 @@ public class Atom implements Component {
      */
     private int mAtomicNumber;
 
+    private LevelMap mMap;
+    private int mPathIndex = 0;
+
     private BehaviorSubject<Vector2> mPosition = BehaviorSubject.createDefault(Vector2.ZERO);
-    private Vector2 mVelocity;
 
     private AtomDrawable mDrawable;
     private final BehaviorSubject<Integer> mColor = BehaviorSubject.createDefault(Color.BLACK);
     private final BehaviorSubject<Float> mRadius = BehaviorSubject.createDefault(0f);
 
-    public Atom(Game game, int id, AtomType type) {
-        mGame = game;
-        mId = id;
+    public Atom(@NonNull Game game, int id, @NonNull AtomType type) {
+        super(game, id);
+
         mAtomicNumber = type.protons;
         mStrength = (type.protons + type.neutrons) * Game.DAMAGE_MULTIPLIER;
+
+        mMap = getGame().getMap();
+        if (mMap.getPath().isEmpty()) {
+            destroy();
+        }
 
         init(type);
 
         mDrawable = new AtomDrawable(this, mCompositeDisposable);
 
         mCompositeDisposable.add(
-                mPosition.subscribe(position -> mGame.postPosition(this, position)));
+            mPosition.subscribe(position -> getGame().postPosition(this, position)));
+        mPosition.onNext(getGame().getMap().getStartingPosition(getGame()));
     }
 
-    private void init(AtomType type) {
+    private void init(@NonNull AtomType type) {
         mName.onNext(type.name);
         mSymbol.onNext(type.symbol);
         mColor.onNext(Color.parseColor(type.colorString));
         mRadius.onNext(calculateRadius());
 
-        mVelocity = calculateVelocity();
+        setTarget(mMap.getPositionFromPath(getGame(), mPathIndex));
+        calculateVelocity();
     }
 
     private float calculateRadius() {
-        float maxRadius = Math.min(mGame.getTileDimensions().x, mGame.getTileDimensions().y);
+        Vector2 tileDimensions = getGame().getTileDimensions();
+        float maxRadius = 0.5f * Math.min(tileDimensions.x, tileDimensions.y);
         // Radius of the atom should be at most 2/3 of tile width or height
         return maxRadius - maxRadius / (mAtomicNumber + 2);
     }
 
     @NonNull
-    private Vector2 calculateVelocity() {
-        // TODO: Configure direction vector - a unit vector describing the velocity direction
-        float sqrt2 = (float) Math.sqrt(2);
-        Vector2 direction = new Vector2(sqrt2 / 2, sqrt2 / 2);
-
-        return direction.scale(BASE_SPEED);
-    }
-
-    public int getId() {
-        return mId;
+    public Observable<Vector2> getPositionObservable() {
+        return mPosition.hide();
     }
 
     @NonNull
-    public Observable<Vector2> getPositionObservable() {
-        return mPosition.hide();
+    @Override
+    public Vector2 getPosition() {
+        return mPosition.getValue();
     }
 
     @NonNull
@@ -113,7 +112,26 @@ public class Atom implements Component {
 
     @Override
     public void update() {
-        mPosition.onNext(mPosition.getValue().add(mVelocity));
+//        Log.d(TAG, "position: " + getPosition().toString());
+
+        if (isAtTarget()) {
+            mPathIndex++;
+
+            if (mMap.getPath().size() - 1 < mPathIndex) {
+                if (mMap.getPath().size() == mPathIndex) {
+                    setTarget(mMap.getEndingPosition(getGame()));
+                } else {
+                    destroy();
+                }
+            } else {
+                setTarget(mMap.getPositionFromPath(getGame(), mPathIndex));
+                calculateVelocity();
+            }
+        } else {
+            calculateVelocity();
+        }
+
+        mPosition.onNext(mPosition.getValue().add(getVelocity()));
     }
 
     @Override
@@ -126,21 +144,25 @@ public class Atom implements Component {
 
         if (mAtomicNumber <= 0) {
             destroy();
-        } else if (mStrength < (mAtomicNumber - 1) * 2 * Game.DAMAGE_MULTIPLIER) {
+        } else if (
+            // If the strength is lower than or equal to the minimum strength
+            // for this atomic number, lower the atomic number
+            mStrength <= (mAtomicNumber - 1) * 2 * Game.DAMAGE_MULTIPLIER) {
             changeElement();
         }
     }
 
+    @Override
     public void destroy() {
-        mVelocity = Vector2.ZERO;
-        mGame.removeComponent(mId);
+        Log.i(TAG, this.toString() + " got destroyed");
         mCompositeDisposable.dispose();
+        super.destroy();
     }
 
     private void changeElement() {
         mAtomicNumber--;
-        mCompositeDisposable.add(mGame.gameRepository.getElements()
-                .subscribe(elements -> init(elements.get(mAtomicNumber))));
+        mCompositeDisposable.add(getGame().gameRepository.getElements()
+            .subscribe(elements -> init(elements.get(mAtomicNumber))));
     }
 
     @SuppressLint("DefaultLocale")
@@ -148,10 +170,11 @@ public class Atom implements Component {
     @Override
     public String toString() {
         return String.format(
-                "%s atom { radius: %.2f, position: %s, velocity: %s }",
-                mSymbol.getValue(),
-                mRadius.getValue(),
-                mPosition.getValue(),
-                mVelocity);
+            "%s atom { id: %d, radius: %.2f, position: %s, velocity: %s }",
+            mSymbol.getValue(),
+            getId(),
+            mRadius.getValue(),
+            getPosition(),
+            getVelocity());
     }
 }

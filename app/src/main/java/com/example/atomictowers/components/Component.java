@@ -4,11 +4,35 @@ import android.graphics.Canvas;
 
 import androidx.annotation.NonNull;
 
-public interface Component {
+import com.example.atomictowers.util.Vector2;
 
-    int getId();
+public abstract class Component {
 
-    void update();
+    private final Game mGame;
+    private final int mId;
 
-    void draw(@NonNull Canvas canvas);
+    public Component(Game game, int id) {
+        mGame = game;
+        mId = id;
+    }
+
+    @NonNull
+    public Game getGame() {
+        return mGame;
+    }
+
+    public int getId() {
+        return mId;
+    }
+
+    @NonNull
+    public abstract Vector2 getPosition();
+
+    public abstract void update();
+
+    public abstract void draw(@NonNull Canvas canvas);
+
+    public void destroy() {
+        mGame.removeComponent(mId);
+    }
 }

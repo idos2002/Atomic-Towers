@@ -56,6 +56,8 @@ public class GameView extends SurfaceView implements Runnable, LifecycleObserver
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         super.onSizeChanged(w, h, oldw, oldh);
 
+        Log.i(TAG, "onSizeChanged() called");
+
         if (mGame != null) {
             mGame.updateDimensions(w, h);
         }

@@ -10,6 +10,7 @@ import androidx.annotation.NonNull;
 
 import com.example.atomictowers.components.atoms.Atom;
 import com.example.atomictowers.data.game.GameRepository;
+import com.example.atomictowers.data.game.LevelMap;
 import com.example.atomictowers.drawables.LevelMapDrawable;
 import com.example.atomictowers.util.Vector2;
 
@@ -34,6 +35,8 @@ public class Game {
 
     private Vector2 mTileDimensions;
 
+    private LevelMap mLevelMap;
+
     private Drawable mLevelMapDrawable;
 
     /**
@@ -43,7 +46,8 @@ public class Game {
     private volatile int mIdCounter = 0;
 
     /**
-     * Used to index all {@link Component}s on screen. Used because of IntelliJ warning.
+     * Used to index all {@link Component}s on screen.
+     * {@link SparseArray} is used instead of {@link java.util.HashMap} because of IntelliJ warning.
      *
      * @see <a href="https://stackoverflow.com/questions/25560629/sparsearray-vs-hashmap">
      * SparseArray vs HashMap (Stack Overflow)</a>
@@ -52,6 +56,14 @@ public class Game {
 
     private PublishSubject<Pair<Atom, Vector2>> mAtomPositions = PublishSubject.create();
 
+    /**
+     * Creates and initializes a new {@link Game} object.
+     * This constructor should <i>only</i> be used for the  initialization of the {@link Game} object.
+     *
+     * @param gameRepository A {@link GameRepository} instance for the game to retrieve game data from.
+     * @param dimensions     The dimensions of the game window
+     *                       (the dimensions of {@link com.example.atomictowers.screens.game.GameView}).
+     */
     public Game(@NonNull GameRepository gameRepository, @NonNull Vector2 dimensions) {
         this.gameRepository = gameRepository;
         mDimensions = dimensions;
@@ -59,18 +71,28 @@ public class Game {
 
         mCompositeDisposable.add(gameRepository.getLevels().subscribe(
             levels -> {
-                mLevelMapDrawable = new LevelMapDrawable(levels.get(0).map);
+                mLevelMap = levels.get(0).map;
+                mLevelMapDrawable = new LevelMapDrawable(mLevelMap);
                 mLevelMapDrawable.setBounds(0, 0, (int) dimensions.x, (int) dimensions.y);
+
+                Log.i(TAG, "Game is initialized");
+                start();
             },
             Throwable::printStackTrace));
 
+        Log.d(TAG, "new Game created");
+    }
+
+    /**
+     * Called Only when the {@link Game} object is fully initialized.
+     * This is the <i>only</i> starting point of the game.
+     */
+    private void start() {
         mCompositeDisposable.add(gameRepository.getElements().subscribe(atomTypes -> {
             addComponent(new Atom(this, 1, atomTypes.get(0)));
             addComponent(new Atom(this, 2, atomTypes.get(1)));
             addComponent(new Atom(this, 3, atomTypes.get(2)));
         }));
-
-        Log.d(TAG, "new Game created");
     }
 
     public void update() {
@@ -93,15 +115,26 @@ public class Game {
 
     public void updateDimensions(int width, int height) {
         mDimensions = new Vector2(width, height);
-        mTileDimensions = new Vector2(width / 8, height / 6);
+
+        // Update the tile dimensions
+        mTileDimensions = new Vector2((float) width / mLevelMap.cols,
+            (float) height / mLevelMap.rows);
     }
 
+    @NonNull
     public Vector2 getDimensions() {
         return mDimensions;
     }
 
+    @NonNull
     public Vector2 getTileDimensions() {
         return mTileDimensions;
+    }
+
+    // TODO: Fix the case when map is not initialized yet - will produce NullPointerException.
+    @NonNull
+    public LevelMap getMap() {
+        return mLevelMap;
     }
 
     public void addComponent(@NonNull Component component) {

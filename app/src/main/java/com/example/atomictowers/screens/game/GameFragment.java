@@ -11,7 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.example.atomictowers.R;
 import com.example.atomictowers.data.game.GameRepository;
@@ -62,7 +62,7 @@ public class GameFragment extends Fragment {
                 GameViewModelFactory factory = new GameViewModelFactory(repository,
                         new Vector2(mBinding.gameView.getWidth(), mBinding.gameView.getHeight()));
 
-                mViewModel = ViewModelProviders.of(GameFragment.this, factory).get(GameViewModel.class);
+                mViewModel = new ViewModelProvider(GameFragment.this, factory).get(GameViewModel.class);
 
                 mBinding.gameView.setGame(mViewModel.game);
             }

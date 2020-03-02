@@ -4,6 +4,8 @@ import android.annotation.SuppressLint;
 
 import androidx.annotation.NonNull;
 
+import com.google.gson.annotations.SerializedName;
+
 public class Vector2 {
 
     public static final Vector2 ZERO = new Vector2(0, 0);
@@ -13,7 +15,10 @@ public class Vector2 {
     public static final Vector2 UNIT_LEFT = new Vector2(-1, 0);
     public static final Vector2 UNIT_UP = new Vector2(0, -1);
 
+    @SerializedName("x")
     public float x;
+
+    @SerializedName("y")
     public float y;
 
     public Vector2(float x, float y) {
@@ -46,6 +51,11 @@ public class Vector2 {
 
     public float magnitude() {
         return (float) Math.sqrt(this.x * this.x + this.y * this.y);
+    }
+
+    @NonNull
+    public Vector2 toUnit() {
+        return this.scale(1 / this.magnitude());
     }
 
     public float angle() {
@@ -104,12 +114,14 @@ public class Vector2 {
         return new Vector2(x, y);
     }
 
+    public boolean equals(@NonNull Vector2 other) {
+        return this.x == other.x && this.y == other.y;
+    }
+
     @SuppressLint("DefaultLocale")
     @NonNull
     @Override
     public String toString() {
         return String.format("(%.2f, %.2f)", this.x, this.y);
     }
-
-
 }

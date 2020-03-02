@@ -1,7 +1,6 @@
 package com.example.atomictowers.drawables;
 
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.PixelFormat;
@@ -26,8 +25,8 @@ public class LevelMapDrawable extends Drawable {
     public LevelMapDrawable(@NonNull LevelMap map) {
         mMap = map;
 
-        mEmptyTilePaint.setColor(Color.BLUE);
-        mPathTilePaint.setColor(Color.YELLOW);
+        mEmptyTilePaint.setColor(0xff00c853);
+        mPathTilePaint.setColor(0xff795548);
     }
 
     @Override
@@ -48,12 +47,17 @@ public class LevelMapDrawable extends Drawable {
                 float x = col * mTileDimensions.x;
                 float y = row * mTileDimensions.y;
 
-                if (mMap.getAtIndex(col, row) == LevelMap.TILE_PATH) {
-                    canvas.drawRect(x, y, x + mTileDimensions.x, y + mTileDimensions.y,
-                        mPathTilePaint);
-                } else {
-                    canvas.drawRect(x, y, x + mTileDimensions.x, y + mTileDimensions.y,
-                        mEmptyTilePaint);
+                switch (mMap.getAtIndex(col, row)) {
+                    case LevelMap.TILE_PATH:
+                        canvas.drawRect(x, y,
+                            x + mTileDimensions.x, y + mTileDimensions.y,
+                            mPathTilePaint);
+                        break;
+                    case LevelMap.TILE_EMPTY:
+                        canvas.drawRect(x, y,
+                            x + mTileDimensions.x, y + mTileDimensions.y,
+                            mEmptyTilePaint);
+                        break;
                 }
             }
         }

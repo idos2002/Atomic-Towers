@@ -9,10 +9,7 @@ import com.example.atomictowers.R;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +18,8 @@ import io.reactivex.Completable;
 import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
+
+import static com.example.atomictowers.util.Util.readResourceFile;
 
 public class GameRepository {
 
@@ -79,7 +78,7 @@ public class GameRepository {
 
     @NonNull
     private Completable setAllLevelsInCache() {
-        return Single.fromCallable(() -> readResourceFile(R.raw.levels))
+        return Single.fromCallable(() -> readResourceFile(mApplicationContext, R.raw.levels))
             .flatMapCompletable(allLevelsJson -> {
                 Type mapType = new TypeToken<Map<String, List<Level>>>() {
                 }.getType();
@@ -118,7 +117,7 @@ public class GameRepository {
         return Completable.fromRunnable(() -> {
             String atomTypesJson = null;
             try {
-                atomTypesJson = readResourceFile(R.raw.atom_types);
+                atomTypesJson = readResourceFile(mApplicationContext, R.raw.atom_types);
                 Log.d(TAG, "reading `atom_types.json` resource file...");
             } catch (IOException e) {
                 Log.e(TAG, "error reading `atom_types.json` from resources: ", e);
@@ -133,21 +132,5 @@ public class GameRepository {
         })
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread());
-    }
-
-    @NonNull
-    private String readResourceFile(int resourceId) throws IOException {
-        InputStream inputStream = mApplicationContext.getResources().openRawResource(resourceId);
-
-        StringBuffer buffer = new StringBuffer();
-
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                buffer.append(line);
-            }
-        }
-
-        return buffer.toString();
     }
 }

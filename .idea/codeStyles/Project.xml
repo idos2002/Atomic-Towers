@@ -1,5 +1,9 @@
 <component name="ProjectCodeStyleConfiguration">
   <code_scheme name="Project" version="173">
+    <JSON>
+      <option name="OBJECT_WRAPPING" value="1" />
+      <option name="ARRAY_WRAPPING" value="1" />
+    </JSON>
     <codeStyleSettings language="JAVA">
       <indentOptions>
         <option name="CONTINUATION_INDENT_SIZE" value="4" />
