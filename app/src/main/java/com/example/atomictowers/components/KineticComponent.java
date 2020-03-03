@@ -6,8 +6,6 @@ import com.example.atomictowers.util.Vector2;
 
 public abstract class KineticComponent extends Component {
 
-    private static final int BASE_SPEED = 2;
-
     private Vector2 mTarget = Vector2.ZERO;
     private Vector2 mVelocity = Vector2.ZERO;
 
@@ -24,9 +22,9 @@ public abstract class KineticComponent extends Component {
         mTarget = target;
     }
 
-    public boolean isAtTarget() {
+    public boolean isNearTarget(float radius) {
         // TODO: convert to check if it is near the target and not exactly at the target
-        return getTarget().equals(getPosition());
+        return getTarget().distance(getPosition()) <= radius;
     }
 
     @NonNull
@@ -34,12 +32,15 @@ public abstract class KineticComponent extends Component {
         return mVelocity;
     }
 
-    // TODO: Change calculateVelocity() to return only the direction,
-    //  so the calculateVelocity() will be abstract, and will be overridden to
-    //  scale the velocity accordingly by the extending component class.
-    protected void calculateVelocity() {
-        Vector2 direction = mTarget.subtract(getPosition()).toUnit();
-        mVelocity = direction.scale(BASE_SPEED);
+    protected void setVelocity(@NonNull Vector2 velocity) {
+        mVelocity = velocity;
+    }
+
+    protected abstract void calculateVelocity();
+
+    @NonNull
+    protected Vector2 calculateDirection() {
+        return mTarget.subtract(getPosition()).toUnit();
     }
 
     @Override

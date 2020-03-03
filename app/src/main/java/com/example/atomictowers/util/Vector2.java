@@ -114,6 +114,10 @@ public class Vector2 {
         return new Vector2(x, y);
     }
 
+    public float distance(@NonNull Vector2 v) {
+        return this.subtract(v).magnitude();
+    }
+
     public boolean equals(@NonNull Vector2 other) {
         return this.x == other.x && this.y == other.y;
     }

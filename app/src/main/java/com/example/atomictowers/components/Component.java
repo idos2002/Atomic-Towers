@@ -16,6 +16,14 @@ public abstract class Component {
         mId = id;
     }
 
+    public Component(Game game, int id, Object data) {
+        this(game, id);
+        init(data);
+    }
+
+    protected void init(@NonNull Object data) {
+    }
+
     @NonNull
     public Game getGame() {
         return mGame;

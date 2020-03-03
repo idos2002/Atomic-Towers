@@ -22,6 +22,8 @@ public class Atom extends KineticComponent {
 
     private static final String TAG = Atom.class.getSimpleName();
 
+    private static final int MAX_SPEED = 8;
+
     private final CompositeDisposable mCompositeDisposable = new CompositeDisposable();
 
     private final BehaviorSubject<String> mName = BehaviorSubject.createDefault("");
@@ -47,8 +49,18 @@ public class Atom extends KineticComponent {
     private final BehaviorSubject<Integer> mColor = BehaviorSubject.createDefault(Color.BLACK);
     private final BehaviorSubject<Float> mRadius = BehaviorSubject.createDefault(0f);
 
-    public Atom(@NonNull Game game, int id, @NonNull AtomType type) {
+    public Atom(@NonNull Game game, int id, @NonNull Object type) {
         super(game, id);
+        init(type);
+    }
+
+    @Override
+    protected void init(@NonNull Object data) {
+        if (!(data instanceof AtomType)) {
+            throw new IllegalArgumentException("`data` is not of type " + AtomType.class.getName());
+        }
+
+        AtomType type = (AtomType) data;
 
         mAtomicNumber = type.protons;
         mStrength = (type.protons + type.neutrons) * Game.DAMAGE_MULTIPLIER;
@@ -58,23 +70,23 @@ public class Atom extends KineticComponent {
             destroy();
         }
 
-        init(type);
+        resetAtomTypeFields(type);
 
         mDrawable = new AtomDrawable(this, mCompositeDisposable);
 
         mCompositeDisposable.add(
             mPosition.subscribe(position -> getGame().postPosition(this, position)));
         mPosition.onNext(getGame().getMap().getStartingPosition(getGame()));
+
+        setTarget(mMap.getPositionFromPath(getGame(), mPathIndex));
+        calculateVelocity();
     }
 
-    private void init(@NonNull AtomType type) {
+    private void resetAtomTypeFields(@NonNull AtomType type) {
         mName.onNext(type.name);
         mSymbol.onNext(type.symbol);
         mColor.onNext(Color.parseColor(type.colorString));
         mRadius.onNext(calculateRadius());
-
-        setTarget(mMap.getPositionFromPath(getGame(), mPathIndex));
-        calculateVelocity();
     }
 
     private float calculateRadius() {
@@ -111,10 +123,14 @@ public class Atom extends KineticComponent {
     }
 
     @Override
-    public void update() {
-//        Log.d(TAG, "position: " + getPosition().toString());
+    protected void calculateVelocity() {
+        float speed = (float) MAX_SPEED / mAtomicNumber;
+        setVelocity(calculateDirection().scale(speed));
+    }
 
-        if (isAtTarget()) {
+    @Override
+    public void update() {
+        if (isNearTarget(getVelocity().magnitude())) {
             mPathIndex++;
 
             if (mMap.getPath().size() - 1 < mPathIndex) {
@@ -162,7 +178,7 @@ public class Atom extends KineticComponent {
     private void changeElement() {
         mAtomicNumber--;
         mCompositeDisposable.add(getGame().gameRepository.getElements()
-            .subscribe(elements -> init(elements.get(mAtomicNumber))));
+            .subscribe(elements -> resetAtomTypeFields(elements.get(mAtomicNumber))));
     }
 
     @SuppressLint("DefaultLocale")

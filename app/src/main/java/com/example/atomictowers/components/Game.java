@@ -14,6 +14,8 @@ import com.example.atomictowers.data.game.LevelMap;
 import com.example.atomictowers.drawables.LevelMapDrawable;
 import com.example.atomictowers.util.Vector2;
 
+import java.lang.reflect.InvocationTargetException;
+
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.subjects.PublishSubject;
 
@@ -32,11 +34,9 @@ public class Game {
     private final CompositeDisposable mCompositeDisposable = new CompositeDisposable();
 
     private Vector2 mDimensions;
-
     private Vector2 mTileDimensions;
 
     private LevelMap mLevelMap;
-
     private Drawable mLevelMapDrawable;
 
     /**
@@ -89,9 +89,11 @@ public class Game {
      */
     private void start() {
         mCompositeDisposable.add(gameRepository.getElements().subscribe(atomTypes -> {
-            addComponent(new Atom(this, 1, atomTypes.get(0)));
-            addComponent(new Atom(this, 2, atomTypes.get(1)));
-            addComponent(new Atom(this, 3, atomTypes.get(2)));
+            // Used as a bug check - should not display this atom.
+            addComponent(Atom.class, atomTypes.get(0));
+
+            addComponent(Atom.class, atomTypes.get(1));
+            addComponent(Atom.class, atomTypes.get(2));
         }));
     }
 
@@ -137,8 +139,33 @@ public class Game {
         return mLevelMap;
     }
 
-    public void addComponent(@NonNull Component component) {
-        mComponents.append(generateComponentId(), component);
+    public void addComponent(@NonNull Class<? extends Component> type) {
+        int id = generateComponentId();
+        try {
+            Component component = type.getConstructor(Game.class, int.class)
+                .newInstance(this, id);
+            mComponents.append(id, component);
+        } catch (IllegalAccessException
+            | InstantiationException
+            | InvocationTargetException
+            | NoSuchMethodException e) {
+            throw new IllegalArgumentException("Could not create a new component", e);
+        }
+
+    }
+
+    public void addComponent(@NonNull Class<? extends Component> type, @NonNull Object data) {
+        int id = generateComponentId();
+        try {
+            Component component = type.getConstructor(Game.class, int.class, Object.class)
+                .newInstance(this, id, data);
+            mComponents.append(id, component);
+        } catch (IllegalAccessException
+            | InstantiationException
+            | InvocationTargetException
+            | NoSuchMethodException e) {
+            throw new IllegalArgumentException("Could not create a new component", e);
+        }
     }
 
     public void removeComponent(int componentId) {
