@@ -1,0 +1,6 @@
+{
+  "electronProjectile": {
+    "speed": 5,
+    "relativeDamage": 0.5
+  }
+}

@@ -17,6 +17,8 @@ class GameCache {
     private List<AtomType> mElements;
     private List<AtomType> mIsotopes;
 
+    private Map<String, WeaponType> mWeaponTypes;
+
     @Nullable
     List<Level> getLevels() {
         return mLevels;
@@ -45,5 +47,17 @@ class GameCache {
     void setAtomTypes(@NonNull Map<String, List<AtomType>> typeMap) {
         mElements = typeMap.get(GameRepository.ELEMENTS_KEY);
         mIsotopes = typeMap.get(GameRepository.ISOTOPES_KEY);
+    }
+
+    @Nullable
+    WeaponType getWeaponType(@NonNull String weaponTypeKey) {
+        if (mWeaponTypes == null) {
+            return null;
+        }
+        return mWeaponTypes.get(weaponTypeKey);
+    }
+
+    void setWeaponTypes(@NonNull Map<String, WeaponType> weaponTypes) {
+        mWeaponTypes = weaponTypes;
     }
 }

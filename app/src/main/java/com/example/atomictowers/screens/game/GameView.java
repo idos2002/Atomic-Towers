@@ -17,6 +17,7 @@ import com.example.atomictowers.components.Game;
 // TODO: Handle animations - would be better to animate the other fragments entrance
 //  and exit in a way that would seem like the GameView is animated,
 //  like a growing circle from the center and such.
+//  A loading screen could be a good solution!
 public class GameView extends SurfaceView implements Runnable, LifecycleObserver {
 
     private static final String TAG = GameView.class.getSimpleName();

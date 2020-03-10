@@ -19,8 +19,8 @@ public class LevelMapDrawable extends Drawable {
 
     private Vector2 mTileDimensions;
 
-    private Paint mEmptyTilePaint = new Paint();
-    private Paint mPathTilePaint = new Paint();
+    private final Paint mEmptyTilePaint = new Paint();
+    private final Paint mPathTilePaint = new Paint();
 
     public LevelMapDrawable(@NonNull LevelMap map) {
         mMap = map;

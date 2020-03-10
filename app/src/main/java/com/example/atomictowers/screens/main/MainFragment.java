@@ -9,7 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProviders;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.atomictowers.R;
@@ -34,10 +34,9 @@ public class MainFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         mBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_main, container, false);
 
-        mBinding.startButton.setOnClickListener(view -> {
-            NavHostFragment.findNavController(this)
-                    .navigate(R.id.action_mainFragment_to_gameFragment);
-        });
+        mBinding.startButton.setOnClickListener(
+            view -> NavHostFragment.findNavController(this)
+                .navigate(R.id.action_mainFragment_to_gameFragment));
 
         return mBinding.getRoot();
     }
@@ -46,7 +45,7 @@ public class MainFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
-        mViewModel = ViewModelProviders.of(this).get(MainViewModel.class);
+        mViewModel = new ViewModelProvider(this).get(MainViewModel.class);
 
         mBinding.setLifecycleOwner(this);
     }

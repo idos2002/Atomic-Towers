@@ -18,7 +18,7 @@ public final class Util {
     public static String readResourceFile(Context applicationContext, int resourceId) throws IOException {
         InputStream inputStream = applicationContext.getResources().openRawResource(resourceId);
 
-        StringBuffer buffer = new StringBuffer();
+        StringBuilder buffer = new StringBuilder();
 
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
             String line;

@@ -1,5 +1,6 @@
 package com.example.atomictowers.components;
 
+import android.annotation.SuppressLint;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
@@ -7,10 +8,13 @@ import android.util.Pair;
 import android.util.SparseArray;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.example.atomictowers.components.atoms.Atom;
+import com.example.atomictowers.components.towers.ElectronProjectile;
 import com.example.atomictowers.data.game.GameRepository;
 import com.example.atomictowers.data.game.LevelMap;
+import com.example.atomictowers.data.game.WeaponType;
 import com.example.atomictowers.drawables.LevelMapDrawable;
 import com.example.atomictowers.util.Vector2;
 
@@ -26,7 +30,8 @@ public class Game {
     /**
      * A multiplier used to scale the damage of the towers, and the strength of the atoms accordingly.
      */
-    // TODO: Set DAMAGE_MULTIPLIER in the towers JSON data.
+
+    // TODO? Set DAMAGE_MULTIPLIER in the towers JSON data.
     public static final int DAMAGE_MULTIPLIER = 100;
 
     public final GameRepository gameRepository;
@@ -52,9 +57,9 @@ public class Game {
      * @see <a href="https://stackoverflow.com/questions/25560629/sparsearray-vs-hashmap">
      * SparseArray vs HashMap (Stack Overflow)</a>
      */
-    private SparseArray<Component> mComponents = new SparseArray<>();
+    private final SparseArray<Component> mComponents = new SparseArray<>();
 
-    private PublishSubject<Pair<Atom, Vector2>> mAtomPositions = PublishSubject.create();
+    private final PublishSubject<Pair<Atom, Vector2>> mAtomPositions = PublishSubject.create();
 
     /**
      * Creates and initializes a new {@link Game} object.
@@ -62,7 +67,7 @@ public class Game {
      *
      * @param gameRepository A {@link GameRepository} instance for the game to retrieve game data from.
      * @param dimensions     The dimensions of the game window
-     *                       (the dimensions of {@link com.example.atomictowers.screens.game.GameView}).
+     *                       (the dimensions of {@linkplain com.example.atomictowers.screens.game.GameView GameView}).
      */
     public Game(@NonNull GameRepository gameRepository, @NonNull Vector2 dimensions) {
         this.gameRepository = gameRepository;
@@ -87,14 +92,29 @@ public class Game {
      * Called Only when the {@link Game} object is fully initialized.
      * This is the <i>only</i> starting point of the game.
      */
+    @SuppressLint("RxDefaultScheduler")
     private void start() {
         mCompositeDisposable.add(gameRepository.getElements().subscribe(atomTypes -> {
             // Used as a bug check - should not display this atom.
             addComponent(Atom.class, atomTypes.get(0));
 
-            addComponent(Atom.class, atomTypes.get(1));
-            addComponent(Atom.class, atomTypes.get(2));
-        }));
+            int atomId = addComponent(Atom.class, atomTypes.get(1));
+
+            mCompositeDisposable.add(
+                gameRepository.getWeaponType(WeaponType.ELECTRON_PROJECTILE_TYPE_KEY)
+                    .subscribe(weaponType -> {
+                        weaponType.setTargetAtom((Atom) getComponent(atomId));
+                        int id = addComponent(ElectronProjectile.class, weaponType);
+                        Log.d(TAG, "created component: " + getComponent(id));
+                    }, Throwable::printStackTrace));
+
+//            mCompositeDisposable.add(
+//                Observable.interval(0, 4000, TimeUnit.MILLISECONDS)
+//                    .subscribe(l -> {
+//                        addComponent(Atom.class, atomTypes.get(1));
+//                        addComponent(Atom.class, atomTypes.get(2));
+//                    }, Throwable::printStackTrace));
+        }, Throwable::printStackTrace));
     }
 
     public void update() {
@@ -134,16 +154,19 @@ public class Game {
     }
 
     // TODO: Fix the case when map is not initialized yet - will produce NullPointerException.
+    //  A solution could be adding a loading screen, until the game is fully initialized
+    //  (like other games).
     @NonNull
     public LevelMap getMap() {
         return mLevelMap;
     }
 
-    public void addComponent(@NonNull Class<? extends Component> type) {
+    public int addComponent(@NonNull Class<? extends Component> type) {
         int id = generateComponentId();
+
         try {
-            Component component = type.getConstructor(Game.class, int.class)
-                .newInstance(this, id);
+            Component component = type.getConstructor(Game.class, int.class, Object.class)
+                .newInstance(this, id, null);
             mComponents.append(id, component);
         } catch (IllegalAccessException
             | InstantiationException
@@ -152,10 +175,12 @@ public class Game {
             throw new IllegalArgumentException("Could not create a new component", e);
         }
 
+        return id;
     }
 
-    public void addComponent(@NonNull Class<? extends Component> type, @NonNull Object data) {
+    public int addComponent(@NonNull Class<? extends Component> type, @NonNull Object data) {
         int id = generateComponentId();
+
         try {
             Component component = type.getConstructor(Game.class, int.class, Object.class)
                 .newInstance(this, id, data);
@@ -166,13 +191,20 @@ public class Game {
             | NoSuchMethodException e) {
             throw new IllegalArgumentException("Could not create a new component", e);
         }
+
+        return id;
+    }
+
+    @Nullable
+    public Component getComponent(int componentId) {
+        return mComponents.get(componentId);
     }
 
     public void removeComponent(int componentId) {
         mComponents.remove(componentId);
     }
 
-    public void postPosition(Atom atom, Vector2 position) {
+    public void postAtomPosition(Atom atom, Vector2 position) {
         mAtomPositions.onNext(new Pair<>(atom, position));
     }
 

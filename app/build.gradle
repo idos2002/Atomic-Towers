@@ -52,9 +52,13 @@ dependencies {
     // explicitly depend on RxJava's latest version for bug fixes and new features).
     implementation "io.reactivex.rxjava2:rxjava:$rxjava_version"
 
+    // RxLint (RxJava lint)
+    lintChecks 'nl.littlerobots.rxlint:detector:1.7.5'
+
     // Gson
     implementation "com.google.code.gson:gson:$gson_version"
 
+    // Testing (JUnit and Espresso)
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'

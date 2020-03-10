@@ -1,7 +1,6 @@
 package com.example.atomictowers.data.game;
 
 import android.content.Context;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -9,7 +8,6 @@ import com.example.atomictowers.R;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
-import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
@@ -33,11 +31,11 @@ public class GameRepository {
     static final String ELEMENTS_KEY = "elements";
     static final String ISOTOPES_KEY = "isotopes";
 
-    private Context mApplicationContext;
+    private final Context mApplicationContext;
 
-    private Gson mGson = new Gson();
+    private final Gson mGson = new Gson();
 
-    private GameCache mGameCache;
+    private final GameCache mGameCache;
 
     private GameRepository(@NonNull Context applicationContext, @NonNull GameCache gameCache) {
         mApplicationContext = applicationContext;
@@ -84,6 +82,9 @@ public class GameRepository {
                 }.getType();
                 Map<String, List<Level>> allLevelsMap = mGson.fromJson(allLevelsJson, mapType);
 
+                if (allLevelsMap == null) {
+                    throw new RuntimeException("error parsing `levels.json`");
+                }
                 mGameCache.setAllLevels(allLevelsMap);
 
                 return Completable.complete();
@@ -114,22 +115,56 @@ public class GameRepository {
 
     @NonNull
     private Completable setAtomTypesInCache() {
-        return Completable.fromRunnable(() -> {
-            String atomTypesJson = null;
-            try {
-                atomTypesJson = readResourceFile(mApplicationContext, R.raw.atom_types);
-                Log.d(TAG, "reading `atom_types.json` resource file...");
-            } catch (IOException e) {
-                Log.e(TAG, "error reading `atom_types.json` from resources: ", e);
-            }
+        return Single.fromCallable(() -> readResourceFile(mApplicationContext, R.raw.atom_types))
+            .flatMapCompletable(atomTypesJson -> {
+                Type mapType = new TypeToken<Map<String, List<AtomType>>>() {
+                }.getType();
+                Map<String, List<AtomType>> atomTypes = mGson.fromJson(atomTypesJson, mapType);
 
-            Type mapType = new TypeToken<Map<String, List<AtomType>>>() {
-            }.getType();
+                if (atomTypes == null) {
+                    throw new RuntimeException("error parsing `atom_types.json`");
+                }
+                mGameCache.setAtomTypes(atomTypes);
 
-            Map<String, List<AtomType>> atomTypes = mGson.fromJson(atomTypesJson, mapType);
+                return Completable.complete();
+            })
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread());
+    }
 
-            mGameCache.setAtomTypes(atomTypes);
-        })
+    @NonNull
+    public Single<WeaponType> getWeaponType(@NonNull String weaponTypeKey) {
+        WeaponType weaponType = mGameCache.getWeaponType(weaponTypeKey);
+        if (weaponType != null) {
+            return Single.just(weaponType);
+        }
+
+        return setWeaponTypesInCache()
+            .andThen(Single.defer(() -> {
+                WeaponType newWeaponType = mGameCache.getWeaponType(weaponTypeKey);
+                if (newWeaponType == null) {
+                    throw new RuntimeException(
+                        "error retrieving WeaponType with key `" + weaponTypeKey + "`");
+                }
+                return Single.just(newWeaponType);
+            }));
+    }
+
+    @NonNull
+    private Completable setWeaponTypesInCache() {
+        return Single.fromCallable(() -> readResourceFile(mApplicationContext, R.raw.weapon_types))
+            .flatMapCompletable(weaponTypesJson -> {
+                Type mapType = new TypeToken<Map<String, WeaponType>>() {
+                }.getType();
+                Map<String, WeaponType> weaponTypes = mGson.fromJson(weaponTypesJson, mapType);
+
+                if (weaponTypes == null) {
+                    throw new RuntimeException("error parsing `weapon_types.json`");
+                }
+                mGameCache.setWeaponTypes(weaponTypes);
+
+                return Completable.complete();
+            })
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread());
     }

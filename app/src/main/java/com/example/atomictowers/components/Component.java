@@ -3,6 +3,7 @@ package com.example.atomictowers.components;
 import android.graphics.Canvas;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.example.atomictowers.util.Vector2;
 
@@ -11,17 +12,9 @@ public abstract class Component {
     private final Game mGame;
     private final int mId;
 
-    public Component(Game game, int id) {
+    public Component(Game game, int id, @Nullable Object data) {
         mGame = game;
         mId = id;
-    }
-
-    public Component(Game game, int id, Object data) {
-        this(game, id);
-        init(data);
-    }
-
-    protected void init(@NonNull Object data) {
     }
 
     @NonNull

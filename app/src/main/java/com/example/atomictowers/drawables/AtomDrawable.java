@@ -20,36 +20,35 @@ public class AtomDrawable extends Drawable {
 
     private static final String TAG = AtomDrawable.class.getSimpleName();
 
-    private final Atom mAtom;
-
     private Vector2 mPosition;
 
     private float mRadius;
     private String mSymbol;
 
-    private Paint mBackgroundPaint = new Paint();
-    private Paint mTextPaint = new Paint();
+    private final Paint mBackgroundPaint = new Paint();
+    private final Paint mTextPaint = new Paint();
 
     public AtomDrawable(@NonNull Atom atom, @NonNull CompositeDisposable compositeDisposable) {
-        mAtom = atom;
 
         compositeDisposable.add(
-            atom.getPositionObservable().subscribe(position -> mPosition = position));
+            atom.getPositionObservable().subscribe(position -> mPosition = position,
+                Throwable::printStackTrace));
 
         compositeDisposable.add(
             atom.getColorObservable().subscribe(color -> {
                 mBackgroundPaint.setColor(color);
                 mTextPaint.setColor(calculateTextColor(color));
-            }));
+            }, Throwable::printStackTrace));
 
         compositeDisposable.add(
             atom.getRadiusObservable().subscribe(radius -> {
                 mRadius = radius;
                 mTextPaint.setTextSize(radius);
-            }));
+            }, Throwable::printStackTrace));
 
         compositeDisposable.add(
-            atom.getSymbolObservable().subscribe(symbol -> mSymbol = symbol));
+            atom.getSymbolObservable().subscribe(symbol -> mSymbol = symbol,
+                Throwable::printStackTrace));
 
         mBackgroundPaint.setAntiAlias(true);
 
@@ -89,12 +88,10 @@ public class AtomDrawable extends Drawable {
 
     @Override
     public void setAlpha(int i) {
-
     }
 
     @Override
     public void setColorFilter(@Nullable ColorFilter colorFilter) {
-
     }
 
     @Override

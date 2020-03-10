@@ -9,8 +9,8 @@ public abstract class KineticComponent extends Component {
     private Vector2 mTarget = Vector2.ZERO;
     private Vector2 mVelocity = Vector2.ZERO;
 
-    public KineticComponent(Game game, int id) {
-        super(game, id);
+    public KineticComponent(Game game, int id, Object data) {
+        super(game, id, data);
     }
 
     @NonNull
@@ -23,8 +23,7 @@ public abstract class KineticComponent extends Component {
     }
 
     public boolean isNearTarget(float radius) {
-        // TODO: convert to check if it is near the target and not exactly at the target
-        return getTarget().distance(getPosition()) <= radius;
+        return mTarget.distance(getPosition()) <= radius;
     }
 
     @NonNull
@@ -32,15 +31,9 @@ public abstract class KineticComponent extends Component {
         return mVelocity;
     }
 
-    protected void setVelocity(@NonNull Vector2 velocity) {
-        mVelocity = velocity;
-    }
-
-    protected abstract void calculateVelocity();
-
-    @NonNull
-    protected Vector2 calculateDirection() {
-        return mTarget.subtract(getPosition()).toUnit();
+    protected void setVelocity(float speed) {
+        Vector2 direction = mTarget.subtract(getPosition()).toUnit();
+        mVelocity = direction.scale(speed);
     }
 
     @Override

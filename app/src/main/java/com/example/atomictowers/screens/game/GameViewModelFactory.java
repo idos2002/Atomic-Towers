@@ -11,8 +11,8 @@ import java.lang.reflect.InvocationTargetException;
 
 public class GameViewModelFactory implements ViewModelProvider.Factory {
 
-    private GameRepository mGameRepository;
-    private Vector2 mGameDimensions;
+    private final GameRepository mGameRepository;
+    private final Vector2 mGameDimensions;
 
     public GameViewModelFactory(@NonNull GameRepository gameRepository, @NonNull Vector2 gameDimensions) {
         mGameRepository = gameRepository;
