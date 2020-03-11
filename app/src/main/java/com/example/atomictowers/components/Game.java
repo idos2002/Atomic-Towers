@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 
 import com.example.atomictowers.components.atoms.Atom;
 import com.example.atomictowers.components.towers.ElectronProjectile;
+import com.example.atomictowers.components.towers.Weapon;
 import com.example.atomictowers.data.game.GameRepository;
 import com.example.atomictowers.data.game.LevelMap;
 import com.example.atomictowers.data.game.WeaponType;
@@ -74,6 +75,8 @@ public class Game {
         mDimensions = dimensions;
         mTileDimensions = new Vector2(dimensions.x / 8, dimensions.y / 6);
 
+        Log.d(TAG, "new Game created");
+
         mCompositeDisposable.add(gameRepository.getLevels().subscribe(
             levels -> {
                 mLevelMap = levels.get(0).map;
@@ -84,8 +87,6 @@ public class Game {
                 start();
             },
             Throwable::printStackTrace));
-
-        Log.d(TAG, "new Game created");
     }
 
     /**
@@ -103,8 +104,10 @@ public class Game {
             mCompositeDisposable.add(
                 gameRepository.getWeaponType(WeaponType.ELECTRON_PROJECTILE_TYPE_KEY)
                     .subscribe(weaponType -> {
+                        Log.d(TAG, "created component: " + getComponent(atomId));
                         weaponType.setTargetAtom((Atom) getComponent(atomId));
                         int id = addComponent(ElectronProjectile.class, weaponType);
+                        ((Weapon) getComponent(id)).setPosition(getDimensions());
                         Log.d(TAG, "created component: " + getComponent(id));
                     }, Throwable::printStackTrace));
 
@@ -162,34 +165,22 @@ public class Game {
     }
 
     public int addComponent(@NonNull Class<? extends Component> type) {
-        int id = generateComponentId();
-
-        try {
-            Component component = type.getConstructor(Game.class, int.class, Object.class)
-                .newInstance(this, id, null);
-            mComponents.append(id, component);
-        } catch (IllegalAccessException
-            | InstantiationException
-            | InvocationTargetException
-            | NoSuchMethodException e) {
-            throw new IllegalArgumentException("Could not create a new component", e);
-        }
-
-        return id;
+        return addComponent(type, null);
     }
 
-    public int addComponent(@NonNull Class<? extends Component> type, @NonNull Object data) {
+    public int addComponent(@NonNull Class<? extends Component> type, @Nullable Object data) {
         int id = generateComponentId();
 
         try {
             Component component = type.getConstructor(Game.class, int.class, Object.class)
                 .newInstance(this, id, data);
             mComponents.append(id, component);
+            Log.d(TAG, "created new component with id: " + id);
         } catch (IllegalAccessException
             | InstantiationException
             | InvocationTargetException
             | NoSuchMethodException e) {
-            throw new IllegalArgumentException("Could not create a new component", e);
+            throw new IllegalArgumentException("could not create a new component", e);
         }
 
         return id;
@@ -202,6 +193,7 @@ public class Game {
 
     public void removeComponent(int componentId) {
         mComponents.remove(componentId);
+        Log.d(TAG, "removed component with id: " + componentId);
     }
 
     public void postAtomPosition(Atom atom, Vector2 position) {

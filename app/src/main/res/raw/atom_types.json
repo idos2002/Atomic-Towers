@@ -5,7 +5,7 @@
       "symbol": "N/A",
       "protons": 0,
       "neutrons": 0,
-      "color": "#000000",
+      "color": "#00000000",
       "phase": "N/A",
       "summary": "N/A"
     },
@@ -14,7 +14,7 @@
       "symbol": "H",
       "protons": 1,
       "neutrons": 0,
-      "color": "#E81313",
+      "color": "#FFE81313",
       "phase": "gas",
       "summary": "Hydrogen is a chemical element with chemical symbol H and atomic number 1. With an atomic weight of 1.00794 u, hydrogen is the lightest element on the periodic table. Its monatomic form (H) is the most abundant chemical substance in the Universe, constituting roughly 75% of all baryonic mass."
     },
@@ -23,7 +23,7 @@
       "symbol": "O",
       "protons": 8,
       "neutrons": 8,
-      "color": "#FFFFFF",
+      "color": "#FFFFFFFF",
       "phase": "gas",
       "summary": "Oxygen is a chemical element with symbol O and atomic number 8. It is a member of the chalcogen group on the periodic table and is a highly reactive nonmetal and oxidizing agent that readily forms compounds (notably oxides) with most elements. By mass, oxygen is the third-most abundant element in the universe, after hydrogen and helium."
     }
@@ -34,7 +34,7 @@
       "symbol": "D",
       "protons": 1,
       "neutrons": 1,
-      "color": "#17ECEC",
+      "color": "#FF17ECEC",
       "phase": "gas",
       "summary": "Deuterium (also known as heavy hydrogen, or hydrogen-2) is one of the three isotopes of hydrogen, with the chemical symbol D. The nucleus of a deuterium atom, called a deuteron, contains one proton and one neutron, whereas the far more common protium (regular hydrogen, or hydrogen-1), has no neutron in the nucleus."
     }

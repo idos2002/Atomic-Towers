@@ -22,7 +22,11 @@ public class GameView extends SurfaceView implements Runnable, LifecycleObserver
 
     private static final String TAG = GameView.class.getSimpleName();
 
-    private SurfaceHolder mSurfaceHolder;
+    private static final int MAX_FPS = 60;
+    private static final int MAX_FRAME_SKIPS = 5;
+    private static final int FRAME_PERIOD = 1000 / MAX_FPS;
+
+    private final SurfaceHolder mSurfaceHolder;
 
     private Thread mGameThread;
     private boolean mRunning;
@@ -30,26 +34,18 @@ public class GameView extends SurfaceView implements Runnable, LifecycleObserver
     private Game mGame;
 
     public GameView(Context context) {
-        super(context);
-        init();
+        this(context, null, 0);
     }
 
     public GameView(Context context, AttributeSet attrs) {
-        super(context, attrs);
-        init();
+        this(context, attrs, 0);
     }
 
     public GameView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        init();
-    }
-
-    private void init() {
         mSurfaceHolder = getHolder();
-
         // TODO: Change coordinates to pathMatrix or something else that describes
         //  the background and its path for atoms
-
         Log.d(TAG, "GameView created");
     }
 
@@ -65,26 +61,58 @@ public class GameView extends SurfaceView implements Runnable, LifecycleObserver
     }
 
     /**
-     * Contains all of the drawing code, used to draw to the view's surface.
+     * Contains the game loop, which updates and renders (draws) the game to the GameView's canvas,
+     * as well as keep the game at a constant game speed through all devices, as defined with the
+     * game's {@linkplain #MAX_FPS}.
      */
     @Override
     public void run() {
         Canvas canvas;
+        long beginTime; // the time when the update-render cycle began
+        long timeDiff;  // the time it took for the update-render cycle to execute
+        int sleepTime;  // milliseconds to delay (sleep) thread if it's ahead
+        int skippedFrames;    // number of frames being skipped (thread is behind)
 
         while (mRunning) {
+            canvas = null;
             if (mSurfaceHolder.getSurface().isValid()) {
                 try {
                     canvas = mSurfaceHolder.lockCanvas();
-                    int saveCount = canvas.save();
+                    synchronized (mSurfaceHolder) {
+                        beginTime = System.currentTimeMillis();
+                        skippedFrames = 0;
 
-                    mGame.update();
-                    mGame.draw(canvas);
+                        mGame.update();
+                        mGame.draw(canvas);
 
-                    canvas.restoreToCount(saveCount);
-                    mSurfaceHolder.unlockCanvasAndPost(canvas);
+                        timeDiff = System.currentTimeMillis() - beginTime;
+                        sleepTime = (int) (FRAME_PERIOD - timeDiff);
+
+                        // Delay the thread to maintain a constant game speed
+                        // (`FRAME_PERIOD` for each frame)
+                        if (sleepTime > 0) {
+                            try {
+                                Thread.sleep(sleepTime);
+                            } catch (InterruptedException ignored) {
+                                // The parameter is called `ignore` because there is no
+                                //  need to handle the exception
+                            }
+                        }
+
+                        // Catch up with the game's state, to maintain the constant game speed
+                        while (sleepTime < 0 && skippedFrames < MAX_FRAME_SKIPS) {
+                            mGame.update();
+                            sleepTime += FRAME_PERIOD;
+                            skippedFrames++;
+                        }
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                     pause();
+                } finally {
+                    if (canvas != null) {
+                        mSurfaceHolder.unlockCanvasAndPost(canvas);
+                    }
                 }
             }
         }

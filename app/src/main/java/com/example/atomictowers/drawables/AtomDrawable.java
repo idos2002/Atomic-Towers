@@ -77,6 +77,10 @@ public class AtomDrawable extends Drawable {
      */
     @ColorInt
     private int calculateTextColor(@ColorInt int backgroundColor) {
+        if (backgroundColor == Color.TRANSPARENT) {
+            return Color.TRANSPARENT;
+        }
+
         // Calculate the perceptive luminance
         double luminance = (0.299 * Color.red(backgroundColor) +
             0.587 * Color.green(backgroundColor) +

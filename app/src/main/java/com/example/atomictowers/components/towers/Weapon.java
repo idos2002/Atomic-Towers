@@ -1,6 +1,7 @@
 package com.example.atomictowers.components.towers;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.example.atomictowers.components.Game;
 import com.example.atomictowers.components.KineticComponent;
@@ -22,15 +23,16 @@ public abstract class Weapon extends KineticComponent {
 
     private final float mDamage;
 
-    public Weapon(Game game, int id, Object data) {
+    public Weapon(@NonNull Game game, int id, @Nullable Object data) {
         super(game, id, data);
+
         if (!(data instanceof WeaponType)) {
             throw new IllegalArgumentException("`data` is not of type " + WeaponType.class.getName());
         }
-
         WeaponType type = (WeaponType) data;
 
         mSpeed = type.speed;
+
         mDamage = type.getDamage();
 
         setTarget(type.getTargetAtom());
@@ -42,10 +44,24 @@ public abstract class Weapon extends KineticComponent {
         return mPosition;
     }
 
+    public void setPosition(@NonNull Vector2 position) {
+        mPosition = position;
+    }
+
+    protected float getDamage() {
+        return mDamage;
+    }
+
     @Override
     public void update() {
         if (isNearTarget(mTargetAtom.getRadius())) {
             damage(mTargetAtom);
+        }
+
+        Vector2 gameDimensions = getGame().getDimensions();
+        if (getPosition().x < 0 || getPosition().x > gameDimensions.x ||
+            getPosition().y < 0 || getPosition().y > gameDimensions.y) {
+            destroy();
         }
 
         setVelocity(mSpeed);

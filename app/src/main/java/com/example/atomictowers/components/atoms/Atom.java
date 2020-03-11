@@ -161,6 +161,8 @@ public class Atom extends KineticComponent {
             mStrength <= (mAtomicNumber - 1) * 2 * Game.DAMAGE_MULTIPLIER) {
             changeElement();
         }
+
+        Log.d(TAG, "damaged: " + toString());
     }
 
     @Override
@@ -183,10 +185,11 @@ public class Atom extends KineticComponent {
     @Override
     public String toString() {
         return String.format(
-            "%s atom { id: %d, radius: %.2f, position: %s, velocity: %s }",
+            "%s atom { id: %d, strength: %d, atomicNumber: %d, position: %s, velocity: %s }",
             mSymbol.getValue(),
             getId(),
-            mRadius.getValue(),
+            mStrength,
+            mAtomicNumber,
             getPosition(),
             getVelocity());
     }

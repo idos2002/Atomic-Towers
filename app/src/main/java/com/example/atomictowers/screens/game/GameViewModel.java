@@ -16,9 +16,9 @@ public class GameViewModel extends ViewModel {
     public final Game game;
 
     public GameViewModel(@NonNull GameRepository gameRepository, @NonNull Vector2 gameDimensions) {
-        game = new Game(gameRepository, gameDimensions);
-
         Log.d(TAG, TAG + " created");
+
+        game = new Game(gameRepository, gameDimensions);
     }
 
     @Override
