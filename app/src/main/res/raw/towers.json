@@ -1,0 +1,10 @@
+{
+  "electronShooter": {
+    "relativeRange": 5,
+    "shootInterval": 500,
+    "weapon": {
+      "speed": 15,
+      "relativeDamage": 0.2
+    }
+  }
+}

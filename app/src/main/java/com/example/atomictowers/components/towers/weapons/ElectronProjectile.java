@@ -1,4 +1,4 @@
-package com.example.atomictowers.components.towers;
+package com.example.atomictowers.components.towers.weapons;
 
 import android.annotation.SuppressLint;
 import android.graphics.Canvas;
@@ -7,7 +7,7 @@ import androidx.annotation.NonNull;
 
 import com.example.atomictowers.components.Game;
 import com.example.atomictowers.components.atoms.Atom;
-import com.example.atomictowers.drawables.ElectronProjectileDrawable;
+import com.example.atomictowers.drawables.weapons.ElectronProjectileDrawable;
 
 public class ElectronProjectile extends Weapon {
     private static final String TAG = ElectronProjectile.class.getSimpleName();

@@ -1,4 +1,4 @@
-package com.example.atomictowers.drawables;
+package com.example.atomictowers.drawables.weapons;
 
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
@@ -9,7 +9,8 @@ import android.graphics.drawable.Drawable;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
-import com.example.atomictowers.components.towers.ElectronProjectile;
+import com.example.atomictowers.components.towers.weapons.ElectronProjectile;
+import com.example.atomictowers.drawables.AtomDrawable;
 import com.example.atomictowers.util.Vector2;
 
 public class ElectronProjectileDrawable extends Drawable {

@@ -1,4 +1,4 @@
-package com.example.atomictowers.components.towers;
+package com.example.atomictowers.components.towers.weapons;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -18,7 +18,7 @@ public abstract class Weapon extends KineticComponent {
 
     private Atom mTargetAtom;
 
-    private Vector2 mPosition = Vector2.ZERO;
+    private Vector2 mPosition;
     private float mSpeed;
 
     private final float mDamage;
@@ -31,10 +31,9 @@ public abstract class Weapon extends KineticComponent {
         }
         WeaponType type = (WeaponType) data;
 
+        mPosition = type.getStartingPosition();
         mSpeed = type.speed;
-
         mDamage = type.getDamage();
-
         setTarget(type.getTargetAtom());
     }
 

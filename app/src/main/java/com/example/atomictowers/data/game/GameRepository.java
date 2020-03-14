@@ -1,7 +1,10 @@
 package com.example.atomictowers.data.game;
 
 import android.content.Context;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
 
+import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 
 import com.example.atomictowers.R;
@@ -133,39 +136,48 @@ public class GameRepository {
     }
 
     @NonNull
-    public Single<WeaponType> getWeaponType(@NonNull String weaponTypeKey) {
-        WeaponType weaponType = mGameCache.getWeaponType(weaponTypeKey);
-        if (weaponType != null) {
-            return Single.just(weaponType);
+    public Single<TowerType> getTowerType(@NonNull String towerTypeKey) {
+        TowerType towerType = mGameCache.getTowerType(towerTypeKey);
+        if (towerType != null) {
+            return Single.just(towerType);
         }
 
-        return setWeaponTypesInCache()
+        return setTowerTypesInCache()
             .andThen(Single.defer(() -> {
-                WeaponType newWeaponType = mGameCache.getWeaponType(weaponTypeKey);
-                if (newWeaponType == null) {
+                TowerType newTowerType = mGameCache.getTowerType(towerTypeKey);
+                if (newTowerType == null) {
                     throw new RuntimeException(
-                        "error retrieving WeaponType with key `" + weaponTypeKey + "`");
+                        "error retrieving WeaponType with key `" + towerTypeKey + "`");
                 }
-                return Single.just(newWeaponType);
+                return Single.just(newTowerType);
             }));
     }
 
     @NonNull
-    private Completable setWeaponTypesInCache() {
-        return Single.fromCallable(() -> readResourceFile(mApplicationContext, R.raw.weapon_types))
-            .flatMapCompletable(weaponTypesJson -> {
-                Type mapType = new TypeToken<Map<String, WeaponType>>() {
+    private Completable setTowerTypesInCache() {
+        return Single.fromCallable(() -> readResourceFile(mApplicationContext, R.raw.towers))
+            .flatMapCompletable(towerTypesJson -> {
+                Type mapType = new TypeToken<Map<String, TowerType>>() {
                 }.getType();
-                Map<String, WeaponType> weaponTypes = mGson.fromJson(weaponTypesJson, mapType);
+                Map<String, TowerType> towerTypes = mGson.fromJson(towerTypesJson, mapType);
 
-                if (weaponTypes == null) {
-                    throw new RuntimeException("error parsing `weapon_types.json`");
+                if (towerTypes == null) {
+                    throw new RuntimeException("error parsing `towers.json`");
                 }
-                mGameCache.setWeaponTypes(weaponTypes);
+                mGameCache.setTowerTypes(towerTypes);
 
                 return Completable.complete();
             })
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread());
+    }
+
+    @NonNull
+    public Drawable getDrawableFromResources(@DrawableRes int resourceId) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            return mApplicationContext.getResources().getDrawable(resourceId, null);
+        } else {
+            return mApplicationContext.getResources().getDrawable(resourceId);
+        }
     }
 }

@@ -4,22 +4,23 @@ import androidx.annotation.NonNull;
 
 import com.example.atomictowers.components.Game;
 import com.example.atomictowers.components.atoms.Atom;
+import com.example.atomictowers.components.towers.weapons.Weapon;
+import com.example.atomictowers.util.Vector2;
 import com.google.gson.annotations.SerializedName;
 
 /**
  * A data class that represents properties of a {@linkplain com.example.atomictowers.components.towers}
  */
 public class WeaponType {
-
-    public static final String ELECTRON_PROJECTILE_TYPE_KEY = "electronProjectile";
-
     private Atom mTargetAtom;
+
+    private Vector2 mStartingPosition;
 
     // TODO: Implement tower leveling
     public int level = 1;
 
     /**
-     * The magnitude of the {@linkplain com.example.atomictowers.components.towers.Weapon Weapon}'s
+     * The magnitude of the {@linkplain Weapon Weapon}'s
      * velocity. If the weapon is a beam for example, the speed will be 0.
      */
     @SerializedName("speed")
@@ -33,19 +34,10 @@ public class WeaponType {
     @SerializedName("relativeDamage")
     public float relativeDamage = 0;
 
-//    @NonNull
-//    public Class<? extends Weapon> getWeaponClass(@NonNull String weaponTypeKey) {
-//        switch (weaponTypeKey) {
-//            case ELECTRON_PROJECTILE_TYPE_KEY:
-//                return ElectronProjectile.class;
-//            default:
-//                throw new IllegalStateException("`weaponTypeKey`: " + weaponTypeKey + " is not a real weapon type key");
-//        }
-//    }
-
     public Atom getTargetAtom() {
         if (mTargetAtom == null) {
-            throw new IllegalStateException("target Atom was not set - to set target atom use `setTargetAtom(targetAtom)`");
+            throw new IllegalStateException(
+                "target Atom was not set - to set target atom use `setTargetAtom(targetAtom)`");
         }
 
         return mTargetAtom;
@@ -53,6 +45,20 @@ public class WeaponType {
 
     public void setTargetAtom(@NonNull Atom targetAtom) {
         mTargetAtom = targetAtom;
+    }
+
+    @NonNull
+    public Vector2 getStartingPosition() {
+        if (mStartingPosition == null) {
+            throw new IllegalStateException("weapon's starting position was not set" +
+                " - to set the starting position use `setStartingPosition()`");
+        }
+
+        return mStartingPosition;
+    }
+
+    public void setStartingPosition(@NonNull Vector2 startingPosition) {
+        mStartingPosition = startingPosition;
     }
 
     public float getDamage() {

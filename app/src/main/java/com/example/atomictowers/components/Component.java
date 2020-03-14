@@ -12,7 +12,7 @@ public abstract class Component {
     private final Game mGame;
     private final int mId;
 
-    public Component(Game game, int id, @Nullable Object data) {
+    public Component(@NonNull Game game, int id, @Nullable Object data) {
         mGame = game;
         mId = id;
     }

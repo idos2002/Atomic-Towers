@@ -158,7 +158,8 @@ public class Atom extends KineticComponent {
         } else if (
             // If the strength is lower than or equal to the minimum strength
             // for this atomic number, lower the atomic number
-            mStrength <= (mAtomicNumber - 1) * 2 * Game.DAMAGE_MULTIPLIER) {
+            mStrength <= (mAtomicNumber - 1) * 2 * Game.DAMAGE_MULTIPLIER
+        ) {
             changeElement();
         }
 
@@ -171,6 +172,10 @@ public class Atom extends KineticComponent {
         mSpeed = 0;
         mCompositeDisposable.dispose();
         super.destroy();
+    }
+
+    public boolean isDestroyed() {
+        return mAtomicNumber <= 0;
     }
 
     private void changeElement() {

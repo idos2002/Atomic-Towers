@@ -11,16 +11,17 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.atomictowers.components.atoms.Atom;
-import com.example.atomictowers.components.towers.ElectronProjectile;
-import com.example.atomictowers.components.towers.Weapon;
+import com.example.atomictowers.components.towers.ElectronShooter;
 import com.example.atomictowers.data.game.GameRepository;
 import com.example.atomictowers.data.game.LevelMap;
-import com.example.atomictowers.data.game.WeaponType;
+import com.example.atomictowers.data.game.TowerType;
 import com.example.atomictowers.drawables.LevelMapDrawable;
 import com.example.atomictowers.util.Vector2;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.TimeUnit;
 
+import io.reactivex.Observable;
 import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.subjects.PublishSubject;
 
@@ -77,16 +78,14 @@ public class Game {
 
         Log.d(TAG, "new Game created");
 
-        mCompositeDisposable.add(gameRepository.getLevels().subscribe(
-            levels -> {
-                mLevelMap = levels.get(0).map;
-                mLevelMapDrawable = new LevelMapDrawable(mLevelMap);
-                mLevelMapDrawable.setBounds(0, 0, (int) dimensions.x, (int) dimensions.y);
+        mCompositeDisposable.add(gameRepository.getLevels().subscribe(levels -> {
+            mLevelMap = levels.get(0).map;
+            mLevelMapDrawable = new LevelMapDrawable(mLevelMap);
+            mLevelMapDrawable.setBounds(0, 0, (int) dimensions.x, (int) dimensions.y);
 
-                Log.i(TAG, "Game is initialized");
-                start();
-            },
-            Throwable::printStackTrace));
+            Log.i(TAG, "Game is initialized");
+            start();
+        }, Throwable::printStackTrace));
     }
 
     /**
@@ -99,24 +98,19 @@ public class Game {
             // Used as a bug check - should not display this atom.
             addComponent(Atom.class, atomTypes.get(0));
 
-            int atomId = addComponent(Atom.class, atomTypes.get(1));
-
             mCompositeDisposable.add(
-                gameRepository.getWeaponType(WeaponType.ELECTRON_PROJECTILE_TYPE_KEY)
-                    .subscribe(weaponType -> {
-                        Log.d(TAG, "created component: " + getComponent(atomId));
-                        weaponType.setTargetAtom((Atom) getComponent(atomId));
-                        int id = addComponent(ElectronProjectile.class, weaponType);
-                        ((Weapon) getComponent(id)).setPosition(getDimensions());
-                        Log.d(TAG, "created component: " + getComponent(id));
+                gameRepository.getTowerType(TowerType.ELECTRON_SHOOTER_TYPE_KEY)
+                    .subscribe(towerType -> {
+                        towerType.setTileIndex(new Vector2(5, 2));
+                        addComponent(ElectronShooter.class, towerType);
                     }, Throwable::printStackTrace));
 
-//            mCompositeDisposable.add(
-//                Observable.interval(0, 4000, TimeUnit.MILLISECONDS)
-//                    .subscribe(l -> {
-//                        addComponent(Atom.class, atomTypes.get(1));
-//                        addComponent(Atom.class, atomTypes.get(2));
-//                    }, Throwable::printStackTrace));
+            mCompositeDisposable.add(
+                Observable.interval(0, 4000, TimeUnit.MILLISECONDS)
+                    .subscribe(l -> {
+                        addComponent(Atom.class, atomTypes.get(1));
+                        //addComponent(Atom.class, atomTypes.get(2));
+                    }, Throwable::printStackTrace));
         }, Throwable::printStackTrace));
     }
 
@@ -198,6 +192,10 @@ public class Game {
 
     public void postAtomPosition(Atom atom, Vector2 position) {
         mAtomPositions.onNext(new Pair<>(atom, position));
+    }
+
+    public Observable<Pair<Atom, Vector2>> getAtomPositionObservable() {
+        return mAtomPositions.hide();
     }
 
     public void finish() {

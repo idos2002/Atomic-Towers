@@ -17,7 +17,7 @@ class GameCache {
     private List<AtomType> mElements;
     private List<AtomType> mIsotopes;
 
-    private Map<String, WeaponType> mWeaponTypes;
+    private Map<String, TowerType> mTowerTypes;
 
     @Nullable
     List<Level> getLevels() {
@@ -50,14 +50,14 @@ class GameCache {
     }
 
     @Nullable
-    WeaponType getWeaponType(@NonNull String weaponTypeKey) {
-        if (mWeaponTypes == null) {
+    TowerType getTowerType(@NonNull String towerTypeKey) {
+        if (mTowerTypes == null) {
             return null;
         }
-        return mWeaponTypes.get(weaponTypeKey);
+        return mTowerTypes.get(towerTypeKey);
     }
 
-    void setWeaponTypes(@NonNull Map<String, WeaponType> weaponTypes) {
-        mWeaponTypes = weaponTypes;
+    void setTowerTypes(@NonNull Map<String, TowerType> towerTypes) {
+        mTowerTypes = towerTypes;
     }
 }

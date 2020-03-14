@@ -74,45 +74,40 @@ public class GameView extends SurfaceView implements Runnable, LifecycleObserver
         int skippedFrames;    // number of frames being skipped (thread is behind)
 
         while (mRunning) {
-            canvas = null;
             if (mSurfaceHolder.getSurface().isValid()) {
                 try {
+                    beginTime = System.currentTimeMillis();
+                    skippedFrames = 0;
+
                     canvas = mSurfaceHolder.lockCanvas();
-                    synchronized (mSurfaceHolder) {
-                        beginTime = System.currentTimeMillis();
-                        skippedFrames = 0;
+                    mGame.update();
+                    mGame.draw(canvas);
+                    mSurfaceHolder.unlockCanvasAndPost(canvas);
 
-                        mGame.update();
-                        mGame.draw(canvas);
+                    timeDiff = System.currentTimeMillis() - beginTime;
+                    sleepTime = (int) (FRAME_PERIOD - timeDiff);
 
-                        timeDiff = System.currentTimeMillis() - beginTime;
-                        sleepTime = (int) (FRAME_PERIOD - timeDiff);
-
-                        // Delay the thread to maintain a constant game speed
-                        // (`FRAME_PERIOD` for each frame)
-                        if (sleepTime > 0) {
-                            try {
-                                Thread.sleep(sleepTime);
-                            } catch (InterruptedException ignored) {
-                                // The parameter is called `ignore` because there is no
-                                //  need to handle the exception
-                            }
-                        }
-
-                        // Catch up with the game's state, to maintain the constant game speed
-                        while (sleepTime < 0 && skippedFrames < MAX_FRAME_SKIPS) {
-                            mGame.update();
-                            sleepTime += FRAME_PERIOD;
-                            skippedFrames++;
+                    // Delay the thread to maintain a constant game speed
+                    // (`FRAME_PERIOD` for each frame)
+                    if (sleepTime > 0) {
+                        try {
+                            Thread.sleep(sleepTime);
+                        } catch (InterruptedException ignored) {
+                            // The parameter is called `ignore` because there is no
+                            //  need to handle the exception
                         }
                     }
+
+                    // NOTE: Commented out as it made the rendering slower and less persistent
+//                    // Catch up with the game's state, to maintain the constant game speed
+//                    while (sleepTime < 0 && skippedFrames < MAX_FRAME_SKIPS) {
+//                        mGame.update();
+//                        sleepTime += FRAME_PERIOD;
+//                        skippedFrames++;
+//                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                     pause();
-                } finally {
-                    if (canvas != null) {
-                        mSurfaceHolder.unlockCanvasAndPost(canvas);
-                    }
                 }
             }
         }
