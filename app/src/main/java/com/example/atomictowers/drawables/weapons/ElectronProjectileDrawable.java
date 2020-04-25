@@ -11,7 +11,6 @@ import androidx.annotation.Nullable;
 
 import com.example.atomictowers.components.towers.weapons.ElectronProjectile;
 import com.example.atomictowers.drawables.AtomDrawable;
-import com.example.atomictowers.util.Vector2;
 
 public class ElectronProjectileDrawable extends Drawable {
     private static final String TAG = AtomDrawable.class.getSimpleName();
@@ -26,13 +25,13 @@ public class ElectronProjectileDrawable extends Drawable {
     private final Paint mPaint = new Paint();
 
     public ElectronProjectileDrawable(@NonNull ElectronProjectile electronProjectile,
-                                      @NonNull Vector2 tileDimensions) {
+                                      float tileSize) {
         mElectronProjectile = electronProjectile;
 
         mPaint.setColor(0xFF00E5FF); // Material color: Cyan A 400
         mPaint.setAntiAlias(true);
 
-        mRadius = Math.min(tileDimensions.x, tileDimensions.y) * RELATIVE_RADIUS_SIZE;
+        mRadius = tileSize * RELATIVE_RADIUS_SIZE;
     }
 
     @Override

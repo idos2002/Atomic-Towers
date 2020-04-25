@@ -11,13 +11,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.atomictowers.data.game.LevelMap;
-import com.example.atomictowers.util.Vector2;
 
 public class LevelMapDrawable extends Drawable {
 
     private final LevelMap mMap;
 
-    private Vector2 mTileDimensions;
+    private float mTileSize;
 
     private final Paint mEmptyTilePaint = new Paint();
     private final Paint mPathTilePaint = new Paint();
@@ -34,9 +33,7 @@ public class LevelMapDrawable extends Drawable {
         super.onBoundsChange(bounds);
 
         if (bounds != null) {
-            mTileDimensions = new Vector2(
-                (float) (bounds.right - bounds.left) / mMap.cols,
-                (float) (bounds.bottom - bounds.top) / mMap.rows);
+            mTileSize = (float) (bounds.right - bounds.left) / mMap.cols;
         }
     }
 
@@ -44,18 +41,18 @@ public class LevelMapDrawable extends Drawable {
     public void draw(@NonNull Canvas canvas) {
         for (int col = 0; col < mMap.cols; col++) {
             for (int row = 0; row < mMap.rows; row++) {
-                float x = col * mTileDimensions.x;
-                float y = row * mTileDimensions.y;
+                float x = col * mTileSize;
+                float y = row * mTileSize;
 
                 switch (mMap.getAtIndex(col, row)) {
                     case LevelMap.TILE_PATH:
                         canvas.drawRect(x, y,
-                            x + mTileDimensions.x, y + mTileDimensions.y,
+                            x + mTileSize, y + mTileSize,
                             mPathTilePaint);
                         break;
                     case LevelMap.TILE_EMPTY:
                         canvas.drawRect(x, y,
-                            x + mTileDimensions.x, y + mTileDimensions.y,
+                            x + mTileSize, y + mTileSize,
                             mEmptyTilePaint);
                         break;
                 }

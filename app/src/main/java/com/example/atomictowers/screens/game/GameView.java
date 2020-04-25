@@ -13,6 +13,7 @@ import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.OnLifecycleEvent;
 
 import com.example.atomictowers.components.Game;
+import com.example.atomictowers.util.Vector2;
 
 // TODO: Handle animations - would be better to animate the other fragments entrance
 //  and exit in a way that would seem like the GameView is animated,
@@ -56,7 +57,7 @@ public class GameView extends SurfaceView implements Runnable, LifecycleObserver
         Log.i(TAG, "onSizeChanged() called");
 
         if (mGame != null) {
-            mGame.updateDimensions(w, h);
+            mGame.updateDimensions(new Vector2(w, h));
         }
     }
 

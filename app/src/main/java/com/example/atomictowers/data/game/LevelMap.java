@@ -52,24 +52,24 @@ public class LevelMap {
 
     @NonNull
     public Vector2 getStartingPosition(@NonNull Game game) {
-        float startX = game.getTileDimensions().x * (mPath.get(0).x - 0.5f);
-        float startY = game.getTileDimensions().y * (mPath.get(0).y + 0.5f);
+        float startX = game.getTileSize() * (mPath.get(0).x - 0.5f);
+        float startY = game.getTileSize() * (mPath.get(0).y + 0.5f);
 
         return new Vector2(startX, startY);
     }
 
     @NonNull
     public Vector2 getPositionFromPath(@NonNull Game game, int pathIndex) {
-        float startX = game.getTileDimensions().x * (mPath.get(pathIndex).x + 0.5f);
-        float startY = game.getTileDimensions().y * (mPath.get(pathIndex).y + 0.5f);
+        float startX = game.getTileSize() * (mPath.get(pathIndex).x + 0.5f);
+        float startY = game.getTileSize() * (mPath.get(pathIndex).y + 0.5f);
 
         return new Vector2(startX, startY);
     }
 
     @NonNull
     public Vector2 getEndingPosition(@NonNull Game game) {
-        float startX = game.getTileDimensions().x * (mPath.get(mPath.size() - 1).x + 1.5f);
-        float startY = game.getTileDimensions().y * (mPath.get(mPath.size() - 1).y + 0.5f);
+        float startX = game.getTileSize() * (mPath.get(mPath.size() - 1).x + 1.5f);
+        float startY = game.getTileSize() * (mPath.get(mPath.size() - 1).y + 0.5f);
 
         return new Vector2(startX, startY);
     }

@@ -4,7 +4,7 @@
     "shootInterval": 500,
     "weapon": {
       "speed": 15,
-      "relativeDamage": 0.2
+      "relativeDamage": 1
     }
   }
 }

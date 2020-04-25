@@ -48,12 +48,15 @@ public class ElectronShooter extends Component {
         }
         TowerType type = (TowerType) data;
 
-        mRange = type.getRange(game.getTileDimensions());
+        float tileSize = game.getTileSize();
+
+        mRange = type.getRange(tileSize);
         mShootInterval = type.shootInterval;
         mWeaponType = type.weaponType;
 
         initPosition(type.getTileIndex());
-        mWeaponType.setStartingPosition(mPosition);
+        mWeaponType.setStartingPosition(
+            mPosition.add(new Vector2(tileSize * 0.5f, tileSize * 0.5f)));
 
         initDrawable(game.gameRepository.getDrawableFromResources(R.drawable.electron_shooter));
 
@@ -61,23 +64,19 @@ public class ElectronShooter extends Component {
     }
 
     private void initPosition(@NonNull Vector2 tileIndex) {
-        float x = tileIndex.x * getGame().getTileDimensions().x;
-        float y = tileIndex.y * getGame().getTileDimensions().y;
+        float x = tileIndex.x * getGame().getTileSize();
+        float y = tileIndex.y * getGame().getTileSize();
         mPosition = new Vector2(x, y);
     }
 
     private void initDrawable(@NonNull Drawable drawable) {
-        Vector2 tileDimensions = getGame().getTileDimensions();
-        float minDimension = Math.min(tileDimensions.x, tileDimensions.y);
-
-        Vector2 tileCenter = tileDimensions.scale(0.5f).add(mPosition);
-
-        Vector2 topLeftCorner = new Vector2(tileCenter.x - minDimension * 0.5f,
-            tileCenter.y - minDimension * 0.5f);
+        int tileSize = (int) getGame().getTileSize();
+        int topLeftCornerX = (int) mPosition.x;
+        int topLeftCornerY = (int) mPosition.y;
 
         mDrawable = getGame().gameRepository.getDrawableFromResources(R.drawable.electron_shooter);
-        mDrawable.setBounds((int) topLeftCorner.x, (int) topLeftCorner.y,
-            (int) (topLeftCorner.x + minDimension), (int) (topLeftCorner.y + minDimension));
+        mDrawable.setBounds(topLeftCornerX, topLeftCornerY,
+            topLeftCornerX + tileSize, topLeftCornerY + tileSize);
     }
 
     private void setAtomRadar() {

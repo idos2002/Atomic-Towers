@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 
 import com.example.atomictowers.components.atoms.Atom;
 import com.example.atomictowers.components.towers.ElectronShooter;
+import com.example.atomictowers.data.game.AtomType;
 import com.example.atomictowers.data.game.GameRepository;
 import com.example.atomictowers.data.game.LevelMap;
 import com.example.atomictowers.data.game.TowerType;
@@ -29,10 +30,12 @@ public class Game {
 
     private static final String TAG = Game.class.getSimpleName();
 
+    private static final int HORIZONTAL_TILE_COUNT = 8;
+    private static final int VERTICAL_TILE_COUNT = 6;
+
     /**
      * A multiplier used to scale the damage of the towers, and the strength of the atoms accordingly.
      */
-
     // TODO? Set DAMAGE_MULTIPLIER in the towers JSON data.
     public static final int DAMAGE_MULTIPLIER = 100;
 
@@ -40,8 +43,8 @@ public class Game {
 
     private final CompositeDisposable mCompositeDisposable = new CompositeDisposable();
 
+    private float mTileSize;
     private Vector2 mDimensions;
-    private Vector2 mTileDimensions;
 
     private LevelMap mLevelMap;
     private Drawable mLevelMapDrawable;
@@ -73,15 +76,13 @@ public class Game {
      */
     public Game(@NonNull GameRepository gameRepository, @NonNull Vector2 dimensions) {
         this.gameRepository = gameRepository;
-        mDimensions = dimensions;
-        mTileDimensions = new Vector2(dimensions.x / 8, dimensions.y / 6);
-
         Log.d(TAG, "new Game created");
 
         mCompositeDisposable.add(gameRepository.getLevels().subscribe(levels -> {
+            updateDimensions(dimensions);
             mLevelMap = levels.get(0).map;
             mLevelMapDrawable = new LevelMapDrawable(mLevelMap);
-            mLevelMapDrawable.setBounds(0, 0, (int) dimensions.x, (int) dimensions.y);
+            mLevelMapDrawable.setBounds(0, 0, (int) mDimensions.x, (int) mDimensions.y);
 
             Log.i(TAG, "Game is initialized");
             start();
@@ -106,11 +107,9 @@ public class Game {
                     }, Throwable::printStackTrace));
 
             mCompositeDisposable.add(
-                Observable.interval(0, 4000, TimeUnit.MILLISECONDS)
-                    .subscribe(l -> {
-                        addComponent(Atom.class, atomTypes.get(1));
-                        //addComponent(Atom.class, atomTypes.get(2));
-                    }, Throwable::printStackTrace));
+                Observable.interval(0, 6000, TimeUnit.MILLISECONDS)
+                    .subscribe(l -> addComponent(Atom.class, atomTypes.get(AtomType.OXYGEN)),
+                        Throwable::printStackTrace));
         }, Throwable::printStackTrace));
     }
 
@@ -132,12 +131,8 @@ public class Game {
         }
     }
 
-    public void updateDimensions(int width, int height) {
-        mDimensions = new Vector2(width, height);
-
-        // Update the tile dimensions
-        mTileDimensions = new Vector2((float) width / mLevelMap.cols,
-            (float) height / mLevelMap.rows);
+    public float getTileSize() {
+        return mTileSize;
     }
 
     @NonNull
@@ -145,9 +140,10 @@ public class Game {
         return mDimensions;
     }
 
-    @NonNull
-    public Vector2 getTileDimensions() {
-        return mTileDimensions;
+    public void updateDimensions(@NonNull Vector2 dimensions) {
+        // The game must have square tiles
+        mTileSize = dimensions.y / VERTICAL_TILE_COUNT;
+        mDimensions = new Vector2(mTileSize * HORIZONTAL_TILE_COUNT, mTileSize * VERTICAL_TILE_COUNT);
     }
 
     // TODO: Fix the case when map is not initialized yet - will produce NullPointerException.

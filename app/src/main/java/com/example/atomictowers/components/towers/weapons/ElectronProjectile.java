@@ -17,7 +17,7 @@ public class ElectronProjectile extends Weapon {
     public ElectronProjectile(Game game, int id, Object data) {
         super(game, id, data);
 
-        mDrawable = new ElectronProjectileDrawable(this, game.getTileDimensions());
+        mDrawable = new ElectronProjectileDrawable(this, game.getTileSize());
     }
 
     @Override

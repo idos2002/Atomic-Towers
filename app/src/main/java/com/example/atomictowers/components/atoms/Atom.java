@@ -90,8 +90,7 @@ public class Atom extends KineticComponent {
     }
 
     private float calculateRadius() {
-        Vector2 tileDimensions = getGame().getTileDimensions();
-        float maxRadius = 0.5f * Math.min(tileDimensions.x, tileDimensions.y);
+        float maxRadius = 0.45f * getGame().getTileSize();
         // Radius of the atom should be at most 2/3 of tile width or height
         return maxRadius - maxRadius / (mAtomicNumber + 2);
     }

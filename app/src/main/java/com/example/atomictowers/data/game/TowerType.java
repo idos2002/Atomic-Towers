@@ -29,8 +29,8 @@ public class TowerType {
 
     private Vector2 mTileIndex;
 
-    public float getRange(Vector2 tileDimensions) {
-        return relativeRange * Math.min(tileDimensions.x, tileDimensions.y);
+    public float getRange(float tileSize) {
+        return relativeRange * tileSize;
     }
 
     @NonNull
