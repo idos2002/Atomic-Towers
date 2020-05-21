@@ -99,6 +99,8 @@ public class ElectronShooter extends Component {
     }
 
     private void setShooter() {
+        // FIXME: keeps looping after game paused - probably will be best if it will
+        //  use Game.mCompositeDisposable too, so game.finish() will clear ALL subscriptions
         mShooterSubscription = Observable.interval(
             mShootInterval, TimeUnit.MILLISECONDS, Schedulers.computation()
         ).subscribe(x -> {
@@ -114,7 +116,7 @@ public class ElectronShooter extends Component {
     }
 
     @Override
-    public void update() {
+    public void update(float timeDiff) {
         if (mTarget != null) {
             if (mTarget.isDestroyed() || mPosition.distance(mTarget.getPosition()) > mRange) {
                 mTarget = null;

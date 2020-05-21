@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import com.example.atomictowers.util.Vector2;
 
 public abstract class KineticComponent extends Component {
+    private static final String TAG = KineticComponent.class.getSimpleName();
 
     private Vector2 mTarget = Vector2.ZERO;
     private Vector2 mVelocity = Vector2.ZERO;

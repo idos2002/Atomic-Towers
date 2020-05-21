@@ -1,6 +1,7 @@
 package com.example.atomictowers.components;
 
 import android.graphics.Canvas;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -8,6 +9,7 @@ import androidx.annotation.Nullable;
 import com.example.atomictowers.util.Vector2;
 
 public abstract class Component {
+    private static final String TAG = Component.class.getSimpleName();
 
     private final Game mGame;
     private final int mId;
@@ -29,11 +31,12 @@ public abstract class Component {
     @NonNull
     public abstract Vector2 getPosition();
 
-    public abstract void update();
+    public abstract void update(float timeDiff);
 
     public abstract void draw(@NonNull Canvas canvas);
 
     public void destroy() {
         mGame.removeComponent(mId);
+        Log.i(TAG, "destroyed: " + this.toString());
     }
 }

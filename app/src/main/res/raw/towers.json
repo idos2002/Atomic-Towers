@@ -1,6 +1,6 @@
 {
   "electronShooter": {
-    "relativeRange": 5,
+    "relativeRange": 3,
     "shootInterval": 500,
     "weapon": {
       "speed": 15,

@@ -23,7 +23,7 @@ public class Atom extends KineticComponent {
 
     private static final String TAG = Atom.class.getSimpleName();
 
-    private static final int MAX_SPEED = 8;
+    private static final float MAX_SPEED = 2f;
 
     private final CompositeDisposable mCompositeDisposable = new CompositeDisposable();
 
@@ -65,6 +65,7 @@ public class Atom extends KineticComponent {
         mMap = getGame().getMap();
         if (mMap.getPath().isEmpty()) {
             destroy();
+            getGame().finish();
         }
 
         initAtomTypeFields(type);
@@ -86,7 +87,7 @@ public class Atom extends KineticComponent {
         mColor.onNext(Color.parseColor(type.colorString));
         mRadius.onNext(calculateRadius());
 
-        mSpeed = (float) MAX_SPEED / mAtomicNumber;
+        mSpeed = (MAX_SPEED / mAtomicNumber) * getGame().getTileSize();
     }
 
     private float calculateRadius() {
@@ -126,22 +127,25 @@ public class Atom extends KineticComponent {
     }
 
     @Override
-    public void update() {
-        if (isNearTarget(getVelocity().magnitude())) {
-            mPathIndex++;
+    public void update(float timeDiff) {
+        if (mAtomicNumber <= 0 || mPosition.getValue().x > getGame().getDimensions().x) {
+            destroy();
+        } else {
+            if (isNearTarget(getVelocity().magnitude() * (0.1f / MAX_SPEED))) {
+                mPathIndex++;
 
-            if (mPathIndex < mMap.getPath().size()) {
-                setTarget(mMap.getPositionFromPath(getGame(), mPathIndex));
-            } else if (mPathIndex == mMap.getPath().size()) {
-                setTarget(mMap.getEndingPosition(getGame()));
-            } else {
-                destroy();
+                if (mPathIndex < mMap.getPath().size()) {
+                    setTarget(mMap.getPositionFromPath(getGame(), mPathIndex));
+                } else if (mPathIndex == mMap.getPath().size()) {
+                    setTarget(mMap.getEndingPosition(getGame()));
+                } else {
+                    destroy();
+                }
             }
+
+            setVelocity(mSpeed);
+            mPosition.onNext(mPosition.getValue().add(getVelocity().scale(timeDiff)));
         }
-
-        setVelocity(mSpeed);
-
-        mPosition.onNext(mPosition.getValue().add(getVelocity()));
     }
 
     @Override
@@ -167,7 +171,6 @@ public class Atom extends KineticComponent {
 
     @Override
     public void destroy() {
-        Log.i(TAG, "destroyed: " + this.toString());
         mSpeed = 0;
         mCompositeDisposable.dispose();
         super.destroy();

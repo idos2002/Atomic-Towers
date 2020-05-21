@@ -24,7 +24,6 @@ public class GameView extends SurfaceView implements Runnable, LifecycleObserver
     private static final String TAG = GameView.class.getSimpleName();
 
     private static final int MAX_FPS = 60;
-    private static final int MAX_FRAME_SKIPS = 5;
     private static final int FRAME_PERIOD = 1000 / MAX_FPS;
 
     private final SurfaceHolder mSurfaceHolder;
@@ -69,43 +68,33 @@ public class GameView extends SurfaceView implements Runnable, LifecycleObserver
     @Override
     public void run() {
         Canvas canvas;
-        long beginTime; // the time when the update-render cycle began
-        long timeDiff;  // the time it took for the update-render cycle to execute
-        int sleepTime;  // milliseconds to delay (sleep) thread if it's ahead
-        int skippedFrames;    // number of frames being skipped (thread is behind)
+        long previousFrameTime = System.currentTimeMillis();
 
         while (mRunning) {
             if (mSurfaceHolder.getSurface().isValid()) {
                 try {
-                    beginTime = System.currentTimeMillis();
-                    skippedFrames = 0;
-
+                    long beginTime = System.currentTimeMillis();
                     canvas = mSurfaceHolder.lockCanvas();
-                    mGame.update();
+
+                    // Measure the frame time (see: https://stackoverflow.com/questions/24561596/smoothing-out-android-game-loop)
+                    long currentTime = System.currentTimeMillis();
+                    long frameTime = currentTime - previousFrameTime;
+                    mGame.update(frameTime / 1000.0f);
+                    previousFrameTime = currentTime;
+
                     mGame.draw(canvas);
                     mSurfaceHolder.unlockCanvasAndPost(canvas);
 
-                    timeDiff = System.currentTimeMillis() - beginTime;
-                    sleepTime = (int) (FRAME_PERIOD - timeDiff);
+                    long sleepTime = FRAME_PERIOD - (System.currentTimeMillis() - beginTime);
 
-                    // Delay the thread to maintain a constant game speed
-                    // (`FRAME_PERIOD` for each frame)
+                    // Delay the thread to maintain a constant frame rate (`FRAME_PERIOD`)
+                    // for each frame
                     if (sleepTime > 0) {
                         try {
                             Thread.sleep(sleepTime);
                         } catch (InterruptedException ignored) {
-                            // The parameter is called `ignore` because there is no
-                            //  need to handle the exception
                         }
                     }
-
-                    // NOTE: Commented out as it made the rendering slower and less persistent
-//                    // Catch up with the game's state, to maintain the constant game speed
-//                    while (sleepTime < 0 && skippedFrames < MAX_FRAME_SKIPS) {
-//                        mGame.update();
-//                        sleepTime += FRAME_PERIOD;
-//                        skippedFrames++;
-//                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                     pause();

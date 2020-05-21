@@ -32,7 +32,7 @@ public abstract class Weapon extends KineticComponent {
         WeaponType type = (WeaponType) data;
 
         mPosition = type.getStartingPosition();
-        mSpeed = type.speed;
+        mSpeed = type.speed * getGame().getTileSize();
         mDamage = type.getDamage();
         setTarget(type.getTargetAtom());
     }
@@ -52,7 +52,7 @@ public abstract class Weapon extends KineticComponent {
     }
 
     @Override
-    public void update() {
+    public void update(float timeDiff) {
         if (isNearTarget(mTargetAtom.getRadius())) {
             damage(mTargetAtom);
         }
@@ -64,7 +64,7 @@ public abstract class Weapon extends KineticComponent {
         }
 
         setVelocity(mSpeed);
-        mPosition = mPosition.add(getVelocity());
+        mPosition = mPosition.add(getVelocity().scale(timeDiff));
     }
 
     public void setTarget(@NonNull Atom atom) {

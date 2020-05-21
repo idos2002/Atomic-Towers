@@ -113,10 +113,15 @@ public class Game {
         }, Throwable::printStackTrace));
     }
 
-    public void update() {
+    /**
+     * Updates all game components with a given change in time.
+     *
+     * @param timeDiff The change in time in seconds.
+     */
+    public void update(float timeDiff) {
         for (int i = 0; i < mComponents.size(); i++) {
             int key = mComponents.keyAt(i);
-            mComponents.get(key).update();
+            mComponents.get(key).update(timeDiff);
         }
     }
 
