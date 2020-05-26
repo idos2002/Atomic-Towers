@@ -44,9 +44,29 @@ public class GameView extends SurfaceView implements Runnable, LifecycleObserver
     public GameView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         mSurfaceHolder = getHolder();
+
         // TODO: Change coordinates to pathMatrix or something else that describes
         //  the background and its path for atoms
         Log.d(TAG, "GameView created");
+    }
+
+    @Override
+    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+        int widthMode = MeasureSpec.getMode(widthMeasureSpec);
+        int heightSize = MeasureSpec.getSize(heightMeasureSpec);
+
+        int width;
+        int height;
+
+        if (widthMode == MeasureSpec.EXACTLY) {
+            throw new IllegalStateException("GameView must not have exact width");
+        } else {
+            height = heightSize;
+            width = (int) Game.getDimensionsByScreenHeight(heightSize).x;
+        }
+
+        //MUST CALL THIS
+        setMeasuredDimension(width, height);
     }
 
     @Override
@@ -79,8 +99,8 @@ public class GameView extends SurfaceView implements Runnable, LifecycleObserver
                     // Measure the frame time (see: https://stackoverflow.com/questions/24561596/smoothing-out-android-game-loop)
                     long currentTime = System.currentTimeMillis();
                     long frameTime = currentTime - previousFrameTime;
-                    mGame.update(frameTime / 1000.0f);
                     previousFrameTime = currentTime;
+                    mGame.update(frameTime / 1000.0f);
 
                     mGame.draw(canvas);
                     mSurfaceHolder.unlockCanvasAndPost(canvas);

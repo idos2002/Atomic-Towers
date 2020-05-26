@@ -145,6 +145,12 @@ public class Game {
         return mDimensions;
     }
 
+    @NonNull
+    public static Vector2 getDimensionsByScreenHeight(int height) {
+        float tileSize = (float) height / VERTICAL_TILE_COUNT;
+        return new Vector2(tileSize * HORIZONTAL_TILE_COUNT, tileSize * VERTICAL_TILE_COUNT);
+    }
+
     public void updateDimensions(@NonNull Vector2 dimensions) {
         // The game must have square tiles
         mTileSize = dimensions.y / VERTICAL_TILE_COUNT;
