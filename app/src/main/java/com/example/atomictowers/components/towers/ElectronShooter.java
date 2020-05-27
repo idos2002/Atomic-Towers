@@ -39,6 +39,7 @@ public class ElectronShooter extends Component {
 
     private Disposable mAtomPositionObservableSubscription;
     private Disposable mShooterSubscription;
+    private Disposable mGamePauseSubscription;
 
     public ElectronShooter(@NonNull Game game, int id, @Nullable Object data) {
         super(game, id, data);
@@ -58,7 +59,8 @@ public class ElectronShooter extends Component {
         mWeaponType.setStartingPosition(
             mPosition.add(new Vector2(tileSize * 0.5f, tileSize * 0.5f)));
 
-        initDrawable(game.gameRepository.getDrawableFromResources(R.drawable.electron_shooter));
+        initDrawable();
+        setGamePauseListener();
 
         setAtomRadar();
     }
@@ -69,7 +71,7 @@ public class ElectronShooter extends Component {
         mPosition = new Vector2(x, y);
     }
 
-    private void initDrawable(@NonNull Drawable drawable) {
+    private void initDrawable() {
         int tileSize = (int) getGame().getTileSize();
         int topLeftCornerX = (int) mPosition.x;
         int topLeftCornerY = (int) mPosition.y;
@@ -77,6 +79,16 @@ public class ElectronShooter extends Component {
         mDrawable = getGame().gameRepository.getDrawableFromResources(R.drawable.electron_shooter);
         mDrawable.setBounds(topLeftCornerX, topLeftCornerY,
             topLeftCornerX + tileSize, topLeftCornerY + tileSize);
+    }
+
+    private void setGamePauseListener() {
+        mGamePauseSubscription = getGame().getGamePausedSubject()
+            .filter(isPaused -> isPaused)
+            .subscribe(isPaused -> {
+                if (mShooterSubscription != null && !mShooterSubscription.isDisposed()) {
+                    mShooterSubscription.dispose();
+                }
+            }, Throwable::printStackTrace);
     }
 
     private void setAtomRadar() {
@@ -99,14 +111,12 @@ public class ElectronShooter extends Component {
     }
 
     private void setShooter() {
-        // FIXME: keeps looping after game paused - probably will be best if it will
-        //  use Game.mCompositeDisposable too, so game.finish() will clear ALL subscriptions
         mShooterSubscription = Observable.interval(
-            mShootInterval, TimeUnit.MILLISECONDS, Schedulers.computation()
-        ).subscribe(x -> {
-            mWeaponType.setTargetAtom(mTarget);
-            getGame().addComponent(ElectronProjectile.class, mWeaponType);
-        }, Throwable::printStackTrace);
+            mShootInterval, TimeUnit.MILLISECONDS, Schedulers.computation())
+            .subscribe(l -> {
+                mWeaponType.setTargetAtom(mTarget);
+                getGame().addComponent(ElectronProjectile.class, mWeaponType);
+            }, Throwable::printStackTrace);
     }
 
     @NonNull
@@ -124,6 +134,8 @@ public class ElectronShooter extends Component {
                     mShooterSubscription.dispose();
                 }
                 setAtomRadar();
+            } else if (mShooterSubscription.isDisposed() && !getGame().getGamePausedSubject().getValue()) {
+                setShooter();
             }
         }
     }
@@ -131,5 +143,19 @@ public class ElectronShooter extends Component {
     @Override
     public void draw(@NonNull Canvas canvas) {
         mDrawable.draw(canvas);
+    }
+
+    @Override
+    public void destroy() {
+        if (!mGamePauseSubscription.isDisposed()) {
+            mGamePauseSubscription.dispose();
+        }
+        if (!mShooterSubscription.isDisposed()) {
+            mShooterSubscription.dispose();
+        }
+        if (!mAtomPositionObservableSubscription.isDisposed()) {
+            mAtomPositionObservableSubscription.dispose();
+        }
+        super.destroy();
     }
 }

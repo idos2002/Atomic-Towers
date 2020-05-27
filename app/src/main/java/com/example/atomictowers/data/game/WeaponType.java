@@ -12,6 +12,13 @@ import com.google.gson.annotations.SerializedName;
  * A data class that represents properties of a {@linkplain com.example.atomictowers.components.towers}
  */
 public class WeaponType {
+
+    WeaponType(@NonNull WeaponType weaponType) {
+        level = weaponType.level;
+        speed = weaponType.speed;
+        relativeDamage = weaponType.relativeDamage;
+    }
+
     private Atom mTargetAtom;
 
     private Vector2 mStartingPosition;
@@ -24,7 +31,7 @@ public class WeaponType {
      * velocity. If the weapon is a beam for example, the speed will be 0.
      */
     @SerializedName("speed")
-    public float speed = 0;
+    public float speed;
 
     /**
      * A floating point number indicating the relative effect of the damage in the atom's strength.
@@ -32,7 +39,7 @@ public class WeaponType {
      * by 0.1 * {@linkplain com.example.atomictowers.components.Game#DAMAGE_MULTIPLIER Game.DAMAGE_MULTIPLIER}.
      */
     @SerializedName("relativeDamage")
-    public float relativeDamage = 0;
+    public float relativeDamage;
 
     public Atom getTargetAtom() {
         if (mTargetAtom == null) {

@@ -9,12 +9,12 @@ import com.example.atomictowers.components.atoms.Atom;
 import com.example.atomictowers.data.game.WeaponType;
 import com.example.atomictowers.util.Vector2;
 
-import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
 
 public abstract class Weapon extends KineticComponent {
     private static final String TAG = Weapon.class.getSimpleName();
 
-    private final CompositeDisposable mCompositeDisposable = new CompositeDisposable();
+    private Disposable mTargetAtomSubscription;
 
     private Atom mTargetAtom;
 
@@ -72,8 +72,8 @@ public abstract class Weapon extends KineticComponent {
 
         // Listen to the target atom's position, and update the target position
         // every time it changes.
-        mCompositeDisposable.add(
-            atom.getPositionObservable().subscribe(this::setTarget, Throwable::printStackTrace));
+        mTargetAtomSubscription = atom.getPositionObservable()
+            .subscribe(this::setTarget, Throwable::printStackTrace);
     }
 
     protected void damage(@NonNull Atom atom) {
@@ -83,7 +83,7 @@ public abstract class Weapon extends KineticComponent {
     @Override
     public void destroy() {
         mSpeed = 0;
-        mCompositeDisposable.dispose();
+        mTargetAtomSubscription.dispose();
         super.destroy();
     }
 }

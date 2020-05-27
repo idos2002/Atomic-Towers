@@ -1,9 +1,11 @@
 package com.example.atomictowers.screens.game;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
@@ -87,6 +89,10 @@ public class GameView extends SurfaceView implements Runnable, LifecycleObserver
      */
     @Override
     public void run() {
+        if (mGame != null) {
+            mGame.resume();
+        }
+
         Canvas canvas;
         long previousFrameTime = System.currentTimeMillis();
 
@@ -125,6 +131,7 @@ public class GameView extends SurfaceView implements Runnable, LifecycleObserver
 
     @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
     public void pause() {
+        mGame.pause();
         mRunning = false;
         try {
             // Stop the thread (rejoin the main thread)
@@ -141,8 +148,26 @@ public class GameView extends SurfaceView implements Runnable, LifecycleObserver
         mRunning = true;
         mGameThread = new Thread(this);
         mGameThread.start();
-
         Log.d(TAG, "resume() called");
+    }
+
+    @SuppressLint("ClickableViewAccessibility")
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        if (mGame != null && event.getAction() == MotionEvent.ACTION_DOWN) {
+            Log.d(TAG, "ontouchevent up");
+            mGame.putTowerOnMap(convertTouchCoordinatesToTileIndex(event.getX(), event.getY()));
+            return true;
+        }
+        return false;
+    }
+
+    @NonNull
+    private Vector2 convertTouchCoordinatesToTileIndex(float x, float y) {
+        float tileSize = mGame.getTileSize();
+        float xIndex = ((x - x % tileSize) / tileSize);
+        float yIndex = ((y - y % tileSize) / tileSize);
+        return new Vector2(xIndex, yIndex);
     }
 
     public void setGame(@NonNull Game game) {

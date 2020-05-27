@@ -24,10 +24,10 @@ import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observable;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.subjects.BehaviorSubject;
 import io.reactivex.subjects.PublishSubject;
 
 public class Game {
-
     private static final String TAG = Game.class.getSimpleName();
 
     private static final int HORIZONTAL_TILE_COUNT = 8;
@@ -36,18 +36,21 @@ public class Game {
     /**
      * A multiplier used to scale the damage of the towers, and the strength of the atoms accordingly.
      */
-    // TODO? Set DAMAGE_MULTIPLIER in the towers JSON data.
     public static final int DAMAGE_MULTIPLIER = 100;
 
     public final GameRepository gameRepository;
 
     private final CompositeDisposable mCompositeDisposable = new CompositeDisposable();
+    private BehaviorSubject<Boolean> mGamePausedSubject = BehaviorSubject.createDefault(false);
 
     private float mTileSize;
     private Vector2 mDimensions;
 
     private LevelMap mLevelMap;
     private Drawable mLevelMapDrawable;
+
+    // TODO: Change value by player's choosing and add scoring system
+    private String mPickedTowerTypeKey = TowerType.ELECTRON_SHOOTER_TYPE_KEY;
 
     /**
      * Used as a counter for {@link Component} ID's.
@@ -100,17 +103,22 @@ public class Game {
             addComponent(Atom.class, atomTypes.get(0));
 
             mCompositeDisposable.add(
-                gameRepository.getTowerType(TowerType.ELECTRON_SHOOTER_TYPE_KEY)
-                    .subscribe(towerType -> {
-                        towerType.setTileIndex(new Vector2(5, 2));
-                        addComponent(ElectronShooter.class, towerType);
-                    }, Throwable::printStackTrace));
-
-            mCompositeDisposable.add(
                 Observable.interval(0, 6000, TimeUnit.MILLISECONDS)
                     .subscribe(l -> addComponent(Atom.class, atomTypes.get(AtomType.OXYGEN)),
                         Throwable::printStackTrace));
         }, Throwable::printStackTrace));
+    }
+
+    public void pause() {
+        mGamePausedSubject.onNext(true);
+    }
+
+    public void resume() {
+        mGamePausedSubject.onNext(false);
+    }
+
+    public BehaviorSubject<Boolean> getGamePausedSubject() {
+        return mGamePausedSubject;
     }
 
     /**
@@ -132,7 +140,10 @@ public class Game {
 
         for (int i = 0; i < mComponents.size(); i++) {
             int key = mComponents.keyAt(i);
-            mComponents.get(key).draw(canvas);
+            Component component = mComponents.get(key);
+            if (component != null) {
+                component.draw(canvas);
+            }
         }
     }
 
@@ -163,6 +174,25 @@ public class Game {
     @NonNull
     public LevelMap getMap() {
         return mLevelMap;
+    }
+
+    // TODO: Add check whether there is already a tower on a tile
+    public void putTowerOnMap(@NonNull Vector2 tileIndex) {
+        mCompositeDisposable.add(
+            gameRepository.getTowerType(mPickedTowerTypeKey)
+                .subscribe(towerType -> {
+                    towerType.setTileIndex(tileIndex);
+                    addComponent(convertTowerTyeKeyToClass(mPickedTowerTypeKey), towerType);
+                }, Throwable::printStackTrace));
+    }
+
+    private Class<? extends Component> convertTowerTyeKeyToClass(@NonNull String towerTypeKey) {
+        switch (towerTypeKey) {
+            case TowerType.ELECTRON_SHOOTER_TYPE_KEY:
+                return ElectronShooter.class;
+            default:
+                throw new IllegalArgumentException("towerTypeKey is not a valid");
+        }
     }
 
     public int addComponent(@NonNull Class<? extends Component> type) {

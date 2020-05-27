@@ -139,7 +139,7 @@ public class GameRepository {
     public Single<TowerType> getTowerType(@NonNull String towerTypeKey) {
         TowerType towerType = mGameCache.getTowerType(towerTypeKey);
         if (towerType != null) {
-            return Single.just(towerType);
+            return Single.just(new TowerType(towerType));
         }
 
         return setTowerTypesInCache()
