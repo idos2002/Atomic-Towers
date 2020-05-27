@@ -7,6 +7,7 @@
         android:id="@+id/main"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@drawable/main_screen_background"
         tools:context=".screens.main.MainFragment">
 
         <TextView
@@ -15,8 +16,9 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="32dp"
             android:layout_marginBottom="16dp"
+            android:fontFamily="sans-serif-black"
             android:text="@string/app_name"
-            android:textColor="@android:color/black"
+            android:textColor="@android:color/white"
             android:textSize="72sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toTopOf="@+id/start_button"
@@ -27,13 +29,15 @@
 
         <Button
             android:id="@+id/start_button"
-            style="@style/Widget.AppCompat.Button.Colored"
+            style="@style/Widget.AppCompat.Button.Borderless"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:layout_marginBottom="32dp"
             android:text="@string/start"
-            android:textSize="18sp"
+            android:textColor="@android:color/white"
+            android:textSize="32sp"
+            android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
