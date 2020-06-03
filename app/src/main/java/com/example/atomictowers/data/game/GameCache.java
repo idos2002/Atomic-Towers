@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Used to cache JSON deserialization results for {@link GameRepository} after retrieval.
@@ -12,41 +13,38 @@ import java.util.Map;
 class GameCache {
 
     private List<Level> mLevels;
-    private List<Level> mIsotopeLevels;
-
-    private List<AtomType> mElements;
-    private List<AtomType> mIsotopes;
-
+    private List<Element> mElements;
     private Map<String, TowerType> mTowerTypes;
 
     @Nullable
-    List<Level> getLevels() {
-        return mLevels;
+    Level getLevel(int level) {
+        if (mLevels == null) {
+            return null;
+        }
+
+        return mLevels.get(level);
+    }
+
+    void setLevels(@NonNull List<Level> levels) {
+        mLevels = levels;
     }
 
     @Nullable
-    List<Level> getIsotopeLevels() {
-        return mIsotopeLevels;
-    }
-
-    void setAllLevels(@NonNull Map<String, List<Level>> allLevelsMap) {
-        mLevels = allLevelsMap.get(GameRepository.LEVELS_KEY);
-        mIsotopeLevels = allLevelsMap.get(GameRepository.ISOTOPE_LEVELS_KEY);
-    }
-
-    @Nullable
-    List<AtomType> getElements() {
+    List<Element> getElements() {
         return mElements;
     }
 
     @Nullable
-    List<AtomType> getIsotopes() {
-        return mIsotopes;
+    Element getElement(int atomicNumber) {
+        if (mElements == null) {
+            return null;
+        }
+
+        return new Element(mElements.get(atomicNumber));
     }
 
-    void setAtomTypes(@NonNull Map<String, List<AtomType>> typeMap) {
-        mElements = typeMap.get(GameRepository.ELEMENTS_KEY);
-        mIsotopes = typeMap.get(GameRepository.ISOTOPES_KEY);
+    void setElements(@NonNull List<Element> elements) {
+        mElements = elements;
     }
 
     @Nullable
@@ -54,7 +52,7 @@ class GameCache {
         if (mTowerTypes == null) {
             return null;
         }
-        return mTowerTypes.get(towerTypeKey);
+        return new TowerType(Objects.requireNonNull(mTowerTypes.get(towerTypeKey)));
     }
 
     void setTowerTypes(@NonNull Map<String, TowerType> towerTypes) {

@@ -23,21 +23,11 @@ import io.reactivex.schedulers.Schedulers;
 import static com.example.atomictowers.util.Util.readResourceFile;
 
 public class GameRepository {
-
     private static final String TAG = GameRepository.class.getSimpleName();
 
     private volatile static GameRepository INSTANCE;
-
-    static final String LEVELS_KEY = "levels";
-    static final String ISOTOPE_LEVELS_KEY = "isotope_levels";
-
-    static final String ELEMENTS_KEY = "elements";
-    static final String ISOTOPES_KEY = "isotopes";
-
     private final Context mApplicationContext;
-
     private final Gson mGson = new Gson();
-
     private final GameCache mGameCache;
 
     private GameRepository(@NonNull Context applicationContext, @NonNull GameCache gameCache) {
@@ -58,37 +48,35 @@ public class GameRepository {
     }
 
     @NonNull
-    public Single<List<Level>> getLevels() {
-        if (mGameCache.getLevels() != null) {
-            return Single.just(mGameCache.getLevels());
+    public Single<Level> getLevel(int levelNumber) {
+        Level level = mGameCache.getLevel(levelNumber);
+        if (level != null) {
+            return Single.just(level);
         }
 
-        return setAllLevelsInCache()
-            .andThen(Single.defer(() -> Single.just(mGameCache.getLevels())));
+        return setLevelsInCache()
+            .andThen(Single.defer(() -> {
+                Level newLevel = mGameCache.getLevel(levelNumber);
+                if (newLevel == null) {
+                    throw new RuntimeException(
+                        "error retrieving Level number " + levelNumber);
+                }
+                return Single.just(newLevel);
+            }));
     }
 
     @NonNull
-    public Single<List<Level>> getIsotopeLevels() {
-        if (mGameCache.getIsotopeLevels() != null) {
-            return Single.just(mGameCache.getIsotopeLevels());
-        }
-
-        return setAllLevelsInCache()
-            .andThen(Single.defer(() -> Single.just(mGameCache.getIsotopeLevels())));
-    }
-
-    @NonNull
-    private Completable setAllLevelsInCache() {
+    private Completable setLevelsInCache() {
         return Single.fromCallable(() -> readResourceFile(mApplicationContext, R.raw.levels))
-            .flatMapCompletable(allLevelsJson -> {
-                Type mapType = new TypeToken<Map<String, List<Level>>>() {
+            .flatMapCompletable(levelsJson -> {
+                Type type = new TypeToken<List<Level>>() {
                 }.getType();
-                Map<String, List<Level>> allLevelsMap = mGson.fromJson(allLevelsJson, mapType);
+                List<Level> levels = mGson.fromJson(levelsJson, type);
 
-                if (allLevelsMap == null) {
+                if (levels == null) {
                     throw new RuntimeException("error parsing `levels.json`");
                 }
-                mGameCache.setAllLevels(allLevelsMap);
+                mGameCache.setLevels(levels);
 
                 return Completable.complete();
             })
@@ -97,37 +85,45 @@ public class GameRepository {
     }
 
     @NonNull
-    public Single<List<AtomType>> getElements() {
+    public Single<List<Element>> getElements() {
         if (mGameCache.getElements() != null) {
             return Single.just(mGameCache.getElements());
         }
 
-        return setAtomTypesInCache()
+        return setElementsInCache()
             .andThen(Single.defer(() -> Single.just(mGameCache.getElements())));
     }
 
     @NonNull
-    public Single<List<AtomType>> getIsotopes() {
-        if (mGameCache.getIsotopes() != null) {
-            return Single.just(mGameCache.getIsotopes());
+    public Single<Element> getElement(int atomicNumber) {
+        Element element = mGameCache.getElement(atomicNumber);
+        if (element != null) {
+            return Single.just(element);
         }
 
-        return setAtomTypesInCache()
-            .andThen(Single.defer(() -> Single.just(mGameCache.getIsotopes())));
+        return setElementsInCache()
+            .andThen(Single.defer(() -> {
+                Element newElement = mGameCache.getElement(atomicNumber);
+                if (newElement == null) {
+                    throw new RuntimeException(
+                        "error retrieving Element with atomic number " + atomicNumber);
+                }
+                return Single.just(newElement);
+            }));
     }
 
     @NonNull
-    private Completable setAtomTypesInCache() {
-        return Single.fromCallable(() -> readResourceFile(mApplicationContext, R.raw.atom_types))
-            .flatMapCompletable(atomTypesJson -> {
-                Type mapType = new TypeToken<Map<String, List<AtomType>>>() {
+    private Completable setElementsInCache() {
+        return Single.fromCallable(() -> readResourceFile(mApplicationContext, R.raw.elements))
+            .flatMapCompletable(elementsJson -> {
+                Type type = new TypeToken<List<Element>>() {
                 }.getType();
-                Map<String, List<AtomType>> atomTypes = mGson.fromJson(atomTypesJson, mapType);
+                List<Element> elements = mGson.fromJson(elementsJson, type);
 
-                if (atomTypes == null) {
-                    throw new RuntimeException("error parsing `atom_types.json`");
+                if (elements == null) {
+                    throw new RuntimeException("error parsing `elements.json`");
                 }
-                mGameCache.setAtomTypes(atomTypes);
+                mGameCache.setElements(elements);
 
                 return Completable.complete();
             })
@@ -139,7 +135,7 @@ public class GameRepository {
     public Single<TowerType> getTowerType(@NonNull String towerTypeKey) {
         TowerType towerType = mGameCache.getTowerType(towerTypeKey);
         if (towerType != null) {
-            return Single.just(new TowerType(towerType));
+            return Single.just(towerType);
         }
 
         return setTowerTypesInCache()
@@ -177,6 +173,7 @@ public class GameRepository {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             return mApplicationContext.getResources().getDrawable(resourceId, null);
         } else {
+            //noinspection deprecation
             return mApplicationContext.getResources().getDrawable(resourceId);
         }
     }

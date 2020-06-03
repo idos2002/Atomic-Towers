@@ -8,12 +8,6 @@ import com.google.gson.annotations.SerializedName;
 public class TowerType {
     public static final String ELECTRON_SHOOTER_TYPE_KEY = "electronShooter";
 
-    TowerType(@NonNull TowerType towerType) {
-        weaponType = new WeaponType(towerType.weaponType);
-        relativeRange = towerType.relativeRange;
-        shootInterval = towerType.shootInterval;
-    }
-
     @SerializedName("weapon")
     public WeaponType weaponType;
 
@@ -35,6 +29,12 @@ public class TowerType {
 
     private Vector2 mTileIndex;
 
+    TowerType(@NonNull TowerType towerType) {
+        weaponType = new WeaponType(towerType.weaponType);
+        relativeRange = towerType.relativeRange;
+        shootInterval = towerType.shootInterval;
+    }
+
     public float getRange(float tileSize) {
         return relativeRange * tileSize;
     }
@@ -50,9 +50,5 @@ public class TowerType {
 
     public void setTileIndex(@NonNull Vector2 tileIndex) {
         mTileIndex = tileIndex;
-    }
-
-    public void setTargetAtom(@NonNull Vector2 position) {
-        mTileIndex = position;
     }
 }

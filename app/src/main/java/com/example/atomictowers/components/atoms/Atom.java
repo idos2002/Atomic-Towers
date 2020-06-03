@@ -10,7 +10,7 @@ import androidx.annotation.Nullable;
 
 import com.example.atomictowers.components.Game;
 import com.example.atomictowers.components.KineticComponent;
-import com.example.atomictowers.data.game.AtomType;
+import com.example.atomictowers.data.game.Element;
 import com.example.atomictowers.data.game.LevelMap;
 import com.example.atomictowers.drawables.AtomDrawable;
 import com.example.atomictowers.util.Vector2;
@@ -37,7 +37,7 @@ public class Atom extends KineticComponent {
     private int mStrength;
 
     /**
-     * The number of protons the atom has, which describe which type of atom it is.
+     * The number of protons the atom has, which describe which element it is.
      */
     private int mAtomicNumber;
 
@@ -53,14 +53,14 @@ public class Atom extends KineticComponent {
 
     public Atom(@NonNull Game game, int id, @Nullable Object data) {
         super(game, id, data);
-        if (!(data instanceof AtomType)) {
-            throw new IllegalArgumentException("`data` is not of type " + AtomType.class.getName());
+        if (!(data instanceof Element)) {
+            throw new IllegalArgumentException("`data` is not of type " + Element.class.getName());
         }
 
-        AtomType type = (AtomType) data;
+        Element element = (Element) data;
 
-        mAtomicNumber = type.protons;
-        mStrength = (type.protons + type.neutrons) * Game.DAMAGE_MULTIPLIER;
+        mAtomicNumber = element.protons;
+        mStrength = (element.protons + element.neutrons) * Game.DAMAGE_MULTIPLIER;
 
         mMap = getGame().getMap();
         if (mMap.getPath().isEmpty()) {
@@ -68,23 +68,20 @@ public class Atom extends KineticComponent {
             getGame().finish();
         }
 
-        initAtomTypeFields(type);
+        initAtomTypeFields(element);
 
         mDrawable = new AtomDrawable(this, mCompositeDisposable);
 
-        mCompositeDisposable.add(
-            mPosition.subscribe(position -> getGame().postAtomPosition(this, position),
-                Throwable::printStackTrace));
         mPosition.onNext(getGame().getMap().getStartingPosition(getGame()));
 
         setTarget(mMap.getPositionFromPath(getGame(), mPathIndex));
         setVelocity(mSpeed);
     }
 
-    private void initAtomTypeFields(@NonNull AtomType type) {
-        mName.onNext(type.name);
-        mSymbol.onNext(type.symbol);
-        mColor.onNext(Color.parseColor(type.colorString));
+    private void initAtomTypeFields(@NonNull Element element) {
+        mName.onNext(element.name);
+        mSymbol.onNext(element.symbol);
+        mColor.onNext(Color.parseColor(element.colorString));
         mRadius.onNext(calculateRadius());
 
         mSpeed = (MAX_SPEED / mAtomicNumber) * getGame().getTileSize();
@@ -136,8 +133,10 @@ public class Atom extends KineticComponent {
 
                 if (mPathIndex < mMap.getPath().size()) {
                     setTarget(mMap.getPositionFromPath(getGame(), mPathIndex));
+                    getGame().postAtomPosition(this, mPosition.getValue());
                 } else if (mPathIndex == mMap.getPath().size()) {
                     setTarget(mMap.getEndingPosition(getGame()));
+                    getGame().postAtomPosition(this, mPosition.getValue());
                 } else {
                     destroy();
                 }
@@ -182,9 +181,8 @@ public class Atom extends KineticComponent {
 
     private void changeElement() {
         mAtomicNumber--;
-        mCompositeDisposable.add(getGame().gameRepository.getElements()
-            .subscribe(elements -> initAtomTypeFields(elements.get(mAtomicNumber)),
-                Throwable::printStackTrace));
+        mCompositeDisposable.add(getGame().gameRepository.getElement(mAtomicNumber)
+            .subscribe(this::initAtomTypeFields, Throwable::printStackTrace));
     }
 
     @SuppressLint("DefaultLocale")

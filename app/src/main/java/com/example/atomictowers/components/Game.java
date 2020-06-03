@@ -12,7 +12,7 @@ import androidx.annotation.Nullable;
 
 import com.example.atomictowers.components.atoms.Atom;
 import com.example.atomictowers.components.towers.ElectronShooter;
-import com.example.atomictowers.data.game.AtomType;
+import com.example.atomictowers.data.game.Element;
 import com.example.atomictowers.data.game.GameRepository;
 import com.example.atomictowers.data.game.LevelMap;
 import com.example.atomictowers.data.game.TowerType;
@@ -81,9 +81,9 @@ public class Game {
         this.gameRepository = gameRepository;
         Log.d(TAG, "new Game created");
 
-        mCompositeDisposable.add(gameRepository.getLevels().subscribe(levels -> {
+        mCompositeDisposable.add(gameRepository.getLevel(0).subscribe(level -> {
             updateDimensions(dimensions);
-            mLevelMap = levels.get(0).map;
+            mLevelMap = level.map;
             mLevelMapDrawable = new LevelMapDrawable(mLevelMap);
             mLevelMapDrawable.setBounds(0, 0, (int) mDimensions.x, (int) mDimensions.y);
 
@@ -98,13 +98,13 @@ public class Game {
      */
     @SuppressLint("RxDefaultScheduler")
     private void start() {
-        mCompositeDisposable.add(gameRepository.getElements().subscribe(atomTypes -> {
+        mCompositeDisposable.add(gameRepository.getElements().subscribe(elements -> {
             // Used as a bug check - should not display this atom.
-            addComponent(Atom.class, atomTypes.get(0));
+            addComponent(Atom.class, elements.get(0));
 
             mCompositeDisposable.add(
                 Observable.interval(0, 6000, TimeUnit.MILLISECONDS)
-                    .subscribe(l -> addComponent(Atom.class, atomTypes.get(AtomType.OXYGEN)),
+                    .subscribe(l -> addComponent(Atom.class, elements.get(Element.OXYGEN)),
                         Throwable::printStackTrace));
         }, Throwable::printStackTrace));
     }
@@ -129,7 +129,10 @@ public class Game {
     public void update(float timeDiff) {
         for (int i = 0; i < mComponents.size(); i++) {
             int key = mComponents.keyAt(i);
-            mComponents.get(key).update(timeDiff);
+            Component component = mComponents.get(key);
+            if (component != null) {
+                component.update(timeDiff);
+            }
         }
     }
 
