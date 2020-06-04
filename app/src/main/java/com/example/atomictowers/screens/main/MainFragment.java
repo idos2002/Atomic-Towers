@@ -2,8 +2,10 @@ package com.example.atomictowers.screens.main;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.PopupMenu;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -19,13 +21,7 @@ import com.example.atomictowers.databinding.FragmentMainBinding;
  * The game's main menu.
  */
 public class MainFragment extends Fragment {
-
-    public static MainFragment newInstance() {
-        return new MainFragment();
-    }
-
     private MainViewModel mViewModel;
-
     private FragmentMainBinding mBinding;
 
     @Nullable
@@ -37,6 +33,8 @@ public class MainFragment extends Fragment {
         mBinding.startButton.setOnClickListener(
             view -> NavHostFragment.findNavController(this)
                 .navigate(R.id.action_mainFragment_to_gameFragment));
+
+        mBinding.menuButton.setOnClickListener(this::showPopup);
 
         return mBinding.getRoot();
     }
@@ -50,4 +48,27 @@ public class MainFragment extends Fragment {
         mBinding.setLifecycleOwner(this);
     }
 
+    private void showPopup(View view) {
+        PopupMenu popup = new PopupMenu(getContext(), view);
+
+        MenuInflater inflater = popup.getMenuInflater();
+        inflater.inflate(R.menu.menu_main, popup.getMenu());
+
+        popup.setOnMenuItemClickListener(menuItem -> {
+            switch (menuItem.getItemId()) {
+                case R.id.settings:
+                    NavHostFragment.findNavController(this)
+                        .navigate(R.id.action_mainFragment_to_settingsFragment);
+                    return true;
+                case R.id.instructions:
+                    NavHostFragment.findNavController(this)
+                        .navigate(R.id.action_mainFragment_to_instructionsFragment);
+                    return true;
+                default:
+                    return false;
+            }
+        });
+
+        popup.show();
+    }
 }
