@@ -117,6 +117,10 @@ public class Game {
         mGamePausedSubject.onNext(false);
     }
 
+    public boolean isGamePaused() {
+        return mGamePausedSubject.getValue();
+    }
+
     public BehaviorSubject<Boolean> getGamePausedSubject() {
         return mGamePausedSubject;
     }

@@ -10,7 +10,6 @@ import com.example.atomictowers.data.game.GameRepository;
 import com.example.atomictowers.util.Vector2;
 
 public class GameViewModel extends ViewModel {
-
     private static final String TAG = GameViewModel.class.getSimpleName();
 
     public final Game game;

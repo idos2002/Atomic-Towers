@@ -131,7 +131,9 @@ public class GameView extends SurfaceView implements Runnable, LifecycleObserver
 
     @OnLifecycleEvent(Lifecycle.Event.ON_PAUSE)
     public void pause() {
-        mGame.pause();
+        if (!mGame.isGamePaused()) {
+            mGame.pause();
+        }
         mRunning = false;
         try {
             // Stop the thread (rejoin the main thread)
@@ -143,7 +145,7 @@ public class GameView extends SurfaceView implements Runnable, LifecycleObserver
         Log.d(TAG, "pause() called");
     }
 
-    @OnLifecycleEvent(Lifecycle.Event.ON_RESUME)
+    @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
     public void resume() {
         mRunning = true;
         mGameThread = new Thread(this);
@@ -155,7 +157,6 @@ public class GameView extends SurfaceView implements Runnable, LifecycleObserver
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         if (mGame != null && event.getAction() == MotionEvent.ACTION_DOWN) {
-            Log.d(TAG, "ontouchevent up");
             mGame.putTowerOnMap(convertTouchCoordinatesToTileIndex(event.getX(), event.getY()));
             return true;
         }
