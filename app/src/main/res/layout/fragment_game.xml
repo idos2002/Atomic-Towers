@@ -16,25 +16,39 @@
             android:id="@+id/sidebar"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@android:color/holo_blue_light"
+            android:background="@drawable/sidebar_background"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="8dp">
 
             <View
                 android:layout_width="match_parent"
-                android:layout_height="20dp"
+                android:layout_height="10dp"
                 android:layout_marginBottom="8dp"
-                android:background="@android:color/holo_red_dark" />
+                android:background="#FFC107" />
+
+            <TextView
+                android:id="@+id/energy_text"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp"
+                android:background="@drawable/button_background"
+                android:fontFamily="@font/orbitron_bold"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
+                android:textColor="@android:color/white"
+                android:textSize="14sp"
+                tools:text="Energy:  50 J" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:layout_margin="8dp"
-                android:fontFamily="sans-serif-black"
+                android:fontFamily="@font/orbitron_black"
                 android:text="@string/towers"
                 android:textAllCaps="false"
-                android:textColor="@android:color/black"
+                android:textColor="@android:color/white"
                 android:textSize="24sp"
                 android:textStyle="bold" />
 
@@ -42,24 +56,34 @@
                 android:id="@+id/electron_shooter_sidebar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="8dp"
                 android:layout_weight="1"
-                android:padding="8dp"
+                android:background="@drawable/button_background"
                 android:src="@drawable/electron_shooter"
                 tools:ignore="ContentDescription" />
 
             <ImageView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="8dp"
                 android:layout_weight="1"
-                android:padding="8dp"
                 android:src="@drawable/electron_shooter"
                 tools:ignore="ContentDescription" />
 
             <ImageView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="8dp"
                 android:layout_weight="1"
-                android:padding="8dp"
                 android:src="@drawable/electron_shooter"
                 tools:ignore="ContentDescription" />
 
