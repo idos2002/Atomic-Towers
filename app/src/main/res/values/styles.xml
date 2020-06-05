@@ -21,6 +21,30 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
+    <!-- Text -->
+    <style name="GameText">
+        <item name="android:fontFamily">@font/orbitron_medium</item>
+        <item name="android:textColor">@android:color/white</item>
+    </style>
+
+    <style name="GameText.Bold">
+        <item name="android:fontFamily">@font/orbitron_bold</item>
+    </style>
+
+    <!-- Button -->
+    <style name="GameButton">
+        <item name="android:background">@drawable/button_background</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:fontFamily">@font/orbitron_black</item>
+    </style>
+
+    <!-- SeekBar -->
+    <style name="GameSeekBar">
+        <item name="android:maxHeight">8dp</item>
+        <item name="android:progressDrawable">@drawable/seekbar_progress</item>
+    </style>
+
+    <!-- Popup Menu -->
     <style name="PopupMenu" parent="@android:style/Widget.PopupMenu">
         <item name="android:popupBackground">@drawable/game_pause_dialog_background</item>
     </style>
@@ -34,12 +58,6 @@
     <style name="AppTheme.TextAppearance.Popup.Small" parent="TextAppearance.AppCompat.Light.Widget.PopupMenu.Small">
         <item name="android:textColor">@android:color/white</item>
         <item name="android:fontFamily">@font/orbitron_medium</item>
-    </style>
-
-    <style name="GameButton">
-        <item name="android:background">@drawable/button_background</item>
-        <item name="android:textColor">@android:color/white</item>
-        <item name="android:fontFamily">@font/orbitron_black</item>
     </style>
 
 </resources>

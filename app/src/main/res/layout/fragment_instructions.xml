@@ -6,7 +6,7 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@drawable/main_screen_background"
+        android:background="@drawable/screen_background"
         android:padding="8dp"
         tools:context=".screens.instructions.InstructionsFragment">
 
@@ -18,13 +18,13 @@
             android:background="@drawable/button_background"
             android:contentDescription="@string/back"
             android:padding="8dp"
-            app:layout_constraintBottom_toBottomOf="@+id/textView4"
+            app:layout_constraintBottom_toBottomOf="@+id/settings_text"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@+id/textView4"
+            app:layout_constraintTop_toTopOf="@+id/settings_text"
             app:srcCompat="@drawable/ic_arrow_back_24px" />
 
         <TextView
-            android:id="@+id/textView4"
+            android:id="@+id/settings_text"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"

@@ -1,4 +1,8 @@
 <resources>
+    <!-- String keys -->
+    <string name="key_music_volume">music_volume_key</string>
+
+    <!-- Content strings -->
     <string name="app_name">Atomic Towers</string>
     <string name="start">Start</string>
     <string name="towers">Towers</string>
@@ -13,4 +17,5 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="back">Back</string>
+    <string name="music_volume">Music Volume</string>
 </resources>

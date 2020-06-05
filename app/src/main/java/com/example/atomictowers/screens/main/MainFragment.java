@@ -29,6 +29,9 @@ public class MainFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         mBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_main, container, false);
+        mViewModel = new ViewModelProvider(this).get(MainViewModel.class);
+
+        mBinding.setLifecycleOwner(this);
 
         mBinding.startButton.setOnClickListener(
             view -> NavHostFragment.findNavController(this)
@@ -37,15 +40,6 @@ public class MainFragment extends Fragment {
         mBinding.menuButton.setOnClickListener(this::showPopup);
 
         return mBinding.getRoot();
-    }
-
-    @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-
-        mViewModel = new ViewModelProvider(this).get(MainViewModel.class);
-
-        mBinding.setLifecycleOwner(this);
     }
 
     private void showPopup(View view) {
