@@ -18,4 +18,7 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="back">Back</string>
     <string name="music_volume">Music Volume</string>
+    <string name="about">About</string>
+    <string name="credits">Credits</string>
+    <string name="credits_content_text"><a href="http://dig.ccmixter.org/files/gurdonark/61313">Memories of Better Times</a> by gurdonark © copyright 2020 Licensed under a Creative Commons <a href="http://creativecommons.org/licenses/by-nc/3.0/">Attribution Noncommercial (3.0)</a> license. Ft: Essesq</string>
 </resources>

@@ -19,6 +19,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 
+import com.example.atomictowers.MainActivity;
 import com.example.atomictowers.R;
 import com.example.atomictowers.data.game.GameRepository;
 import com.example.atomictowers.databinding.FragmentGameBinding;
@@ -125,6 +126,7 @@ public class GameFragment extends Fragment {
 
         layout.findViewById(R.id.home_button).setOnClickListener(view -> {
             dialog.dismiss();
+
             NavHostFragment.findNavController(this).popBackStack(R.id.mainFragment, false);
         });
 
@@ -136,6 +138,11 @@ public class GameFragment extends Fragment {
         super.onDestroy();
         if (!mGamePausedSubscription.isDisposed()) {
             mGamePausedSubscription.dispose();
+        }
+
+        // Resume music
+        if (!MainActivity.mediaPlayer.isPlaying()) {
+            MainActivity.mediaPlayer.start();
         }
     }
 }

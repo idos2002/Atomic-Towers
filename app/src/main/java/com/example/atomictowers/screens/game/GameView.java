@@ -14,6 +14,7 @@ import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.OnLifecycleEvent;
 
+import com.example.atomictowers.MainActivity;
 import com.example.atomictowers.components.Game;
 import com.example.atomictowers.util.Vector2;
 
@@ -142,6 +143,11 @@ public class GameView extends SurfaceView implements Runnable, LifecycleObserver
             e.printStackTrace();
         }
 
+        // Pause music
+        if (MainActivity.mediaPlayer.isPlaying()) {
+            MainActivity.mediaPlayer.pause();
+        }
+
         Log.d(TAG, "pause() called");
     }
 
@@ -150,6 +156,12 @@ public class GameView extends SurfaceView implements Runnable, LifecycleObserver
         mRunning = true;
         mGameThread = new Thread(this);
         mGameThread.start();
+
+        // Resume music
+        if (!MainActivity.mediaPlayer.isPlaying()) {
+            MainActivity.mediaPlayer.start();
+        }
+
         Log.d(TAG, "resume() called");
     }
 

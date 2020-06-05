@@ -9,5 +9,8 @@
         android:id="@+id/instructions"
         android:title="@string/instructions"
         app:showAsAction="never" />
-
+    <item
+        android:id="@+id/about"
+        android:title="@string/about"
+        app:showAsAction="never" />
 </menu>

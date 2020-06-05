@@ -12,6 +12,7 @@ public class SettingsViewModel extends ViewModel {
         return mVolumePercentage;
     }
 
+
     private final MutableLiveData<Boolean> mSaveVolumePreferenceEvent = new MutableLiveData<>();
 
     public LiveData<Boolean> getSaveVolumePreferenceEvent() {

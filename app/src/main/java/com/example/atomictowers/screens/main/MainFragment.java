@@ -58,6 +58,10 @@ public class MainFragment extends Fragment {
                     NavHostFragment.findNavController(this)
                         .navigate(R.id.action_mainFragment_to_instructionsFragment);
                     return true;
+                case R.id.about:
+                    NavHostFragment.findNavController(this)
+                        .navigate(R.id.action_mainFragment_to_aboutFragment);
+                    return true;
                 default:
                     return false;
             }

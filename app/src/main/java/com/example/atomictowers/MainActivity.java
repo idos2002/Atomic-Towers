@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity;
  * Serves as a container for a single-activity app, using the AndroidX Navigation Component.
  */
 public class MainActivity extends AppCompatActivity {
+    private static final String TAG = MainActivity.class.getSimpleName();
     public static final float DEFAULT_MUSIC_VOLUME = 0.75f;
 
     // IMPORTANT! Add credit to music in about screen
@@ -29,14 +30,18 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
         mediaPlayer.start();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mediaPlayer.pause();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
         mediaPlayer.release();
     }
 
