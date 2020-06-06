@@ -14,7 +14,6 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = MainActivity.class.getSimpleName();
     public static final float DEFAULT_MUSIC_VOLUME = 0.75f;
 
-    // IMPORTANT! Add credit to music in about screen
     public static MediaPlayer mediaPlayer;
 
     @Override

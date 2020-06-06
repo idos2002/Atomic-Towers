@@ -2,7 +2,12 @@ package com.example.atomictowers.screens.game;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.drawable.ColorDrawable;
+import android.media.AudioManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -39,6 +44,18 @@ public class GameFragment extends Fragment {
     private FragmentGameBinding mBinding;
     private Disposable mGamePausedSubscription;
 
+    private BroadcastReceiver mUnpluggedHeadsetBroadcastReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (AudioManager.ACTION_AUDIO_BECOMING_NOISY.equals(intent.getAction())) {
+                Log.i(TAG, "Received broadcast!");
+                mBinding.gameView.pause();
+            }
+        }
+    };
+    private IntentFilter mUnpluggedHeadsetIntentFilter =
+        new IntentFilter(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,7 +88,7 @@ public class GameFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         GameRepository repository = GameRepository.getInstance(
-                Objects.requireNonNull(getActivity()).getApplicationContext());
+            Objects.requireNonNull(getActivity()).getApplicationContext());
 
         // See why at:
         // https://stackoverflow.com/questions/16925317/getwidth-and-getheight-always-returning-0-custom-view/16925529
@@ -131,6 +148,25 @@ public class GameFragment extends Fragment {
         });
 
         dialog.show();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Context context = getActivity();
+        if (context != null) {
+            context.registerReceiver(
+                mUnpluggedHeadsetBroadcastReceiver, mUnpluggedHeadsetIntentFilter);
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        Context context = getActivity();
+        if (context != null) {
+            context.unregisterReceiver(mUnpluggedHeadsetBroadcastReceiver);
+        }
     }
 
     @Override
