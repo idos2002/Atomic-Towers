@@ -8,6 +8,7 @@ import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
 
 import com.example.atomictowers.R;
+import com.example.atomictowers.data.game.service.SavedGameState;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -21,9 +22,11 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
 import static com.example.atomictowers.util.Util.readResourceFile;
+import static com.example.atomictowers.util.Util.writeInternalStorageFile;
 
 public class GameRepository {
     private static final String TAG = GameRepository.class.getSimpleName();
+    public static final String SAVED_GAME_STATE_FILENAME = "saved_game_state.json";
 
     private volatile static GameRepository INSTANCE;
     private final Context mApplicationContext;
@@ -176,5 +179,16 @@ public class GameRepository {
             //noinspection deprecation
             return mApplicationContext.getResources().getDrawable(resourceId);
         }
+    }
+
+    @NonNull
+    public Completable saveGameState(@NonNull SavedGameState gameState) {
+        return Completable.fromCallable(() -> {
+            String gameStateJson = mGson.toJson(gameState);
+            writeInternalStorageFile(mApplicationContext, SAVED_GAME_STATE_FILENAME, gameStateJson);
+            return Completable.complete();
+        })
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread());
     }
 }

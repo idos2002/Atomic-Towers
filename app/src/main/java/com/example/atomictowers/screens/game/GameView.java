@@ -2,6 +2,7 @@ package com.example.atomictowers.screens.game;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Canvas;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -16,12 +17,10 @@ import androidx.lifecycle.OnLifecycleEvent;
 
 import com.example.atomictowers.MainActivity;
 import com.example.atomictowers.components.Game;
+import com.example.atomictowers.data.game.service.GameStateService;
+import com.example.atomictowers.data.game.service.SavedGameState;
 import com.example.atomictowers.util.Vector2;
 
-// TODO: Handle animations - would be better to animate the other fragments entrance
-//  and exit in a way that would seem like the GameView is animated,
-//  like a growing circle from the center and such.
-//  A loading screen could be a good solution!
 public class GameView extends SurfaceView implements Runnable, LifecycleObserver {
 
     private static final String TAG = GameView.class.getSimpleName();
@@ -148,7 +147,18 @@ public class GameView extends SurfaceView implements Runnable, LifecycleObserver
             MainActivity.mediaPlayer.pause();
         }
 
+        // Save the game state with GameStateService
+        saveGameState();
+
         Log.d(TAG, "pause() called");
+    }
+
+    private void saveGameState() {
+        Intent intent = new Intent(getContext(), GameStateService.class);
+        SavedGameState savedGameState = new SavedGameState(
+            mGame.getLevelNumber(), mGame.getComponentsMap());
+        intent.putExtra(GameStateService.GAME_STATE_INTENT_EXTRA_NAME, savedGameState);
+        getContext().startService(intent);
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)

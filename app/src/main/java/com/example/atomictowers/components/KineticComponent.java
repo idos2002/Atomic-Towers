@@ -28,7 +28,7 @@ public abstract class KineticComponent extends Component {
     }
 
     @NonNull
-    protected Vector2 getVelocity() {
+    public Vector2 getVelocity() {
         return mVelocity;
     }
 

@@ -4,6 +4,7 @@
 
     <!-- Content strings -->
     <string name="app_name">Atomic Towers</string>
+    <string name="game_state_service_description">Saves current paused Atomic Towers game state</string>
     <string name="start">Start</string>
     <string name="towers">Towers</string>
     <string name="energy_count"><b>Energy:</b>  %1$d J</string>

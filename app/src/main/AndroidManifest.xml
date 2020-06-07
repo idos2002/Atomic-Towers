@@ -12,16 +12,20 @@
         android:theme="@style/AppTheme"
         tools:ignore="GoogleAppIndexingWarning">
 
-    <activity
+        <activity
             android:name=".MainActivity"
             android:screenOrientation="sensorLandscape"
             tools:ignore="LockedOrientationActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service
+            android:name=".data.game.service.GameStateService"
+            android:description="@string/game_state_service_description"
+            android:exported="false" />
 
     </application>
 

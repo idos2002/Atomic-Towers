@@ -20,9 +20,7 @@ import io.reactivex.disposables.CompositeDisposable;
 import io.reactivex.subjects.BehaviorSubject;
 
 public class Atom extends KineticComponent {
-
     private static final String TAG = Atom.class.getSimpleName();
-
     private static final float MAX_SPEED = 2f;
 
     private final CompositeDisposable mCompositeDisposable = new CompositeDisposable();
@@ -73,6 +71,9 @@ public class Atom extends KineticComponent {
         mDrawable = new AtomDrawable(this, mCompositeDisposable);
 
         mPosition.onNext(getGame().getMap().getStartingPosition(getGame()));
+        mCompositeDisposable.add(mPosition.subscribe(
+            position -> getGame().postAtomPosition(this, position),
+            Throwable::printStackTrace));
 
         setTarget(mMap.getPositionFromPath(getGame(), mPathIndex));
         setVelocity(mSpeed);
@@ -91,6 +92,18 @@ public class Atom extends KineticComponent {
         float maxRadius = 0.45f * getGame().getTileSize();
         // Radius of the atom should be at most 2/3 of tile width or height
         return maxRadius - maxRadius / (mAtomicNumber + 2);
+    }
+
+    public int getAtomicNumber() {
+        return mAtomicNumber;
+    }
+
+    public int getStrength() {
+        return mStrength;
+    }
+
+    public int getPathIndex() {
+        return mPathIndex;
     }
 
     @NonNull
@@ -133,10 +146,8 @@ public class Atom extends KineticComponent {
 
                 if (mPathIndex < mMap.getPath().size()) {
                     setTarget(mMap.getPositionFromPath(getGame(), mPathIndex));
-                    getGame().postAtomPosition(this, mPosition.getValue());
                 } else if (mPathIndex == mMap.getPath().size()) {
                     setTarget(mMap.getEndingPosition(getGame()));
-                    getGame().postAtomPosition(this, mPosition.getValue());
                 } else {
                     destroy();
                 }

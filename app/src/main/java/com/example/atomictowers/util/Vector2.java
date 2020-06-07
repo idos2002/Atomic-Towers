@@ -6,10 +6,10 @@ import androidx.annotation.NonNull;
 
 import com.google.gson.annotations.SerializedName;
 
-public class Vector2 {
+import java.io.Serializable;
 
+public class Vector2 implements Serializable {
     public static final Vector2 ZERO = new Vector2(0, 0);
-
     public static final Vector2 UNIT_RIGHT = new Vector2(1, 0);
     public static final Vector2 UNIT_DOWN = new Vector2(0, 1);
     public static final Vector2 UNIT_LEFT = new Vector2(-1, 0);

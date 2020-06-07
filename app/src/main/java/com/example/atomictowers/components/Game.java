@@ -175,6 +175,11 @@ public class Game {
         mDimensions = new Vector2(mTileSize * HORIZONTAL_TILE_COUNT, mTileSize * VERTICAL_TILE_COUNT);
     }
 
+    public int getLevelNumber() {
+        // TODO: Update this method
+        return 0;
+    }
+
     // TODO: Fix the case when map is not initialized yet - will produce NullPointerException.
     //  A solution could be adding a loading screen, until the game is fully initialized
     //  (like other games).
@@ -200,6 +205,11 @@ public class Game {
             default:
                 throw new IllegalArgumentException("towerTypeKey is not a valid");
         }
+    }
+
+    @NonNull
+    public SparseArray<Component> getComponentsMap() {
+        return mComponents.clone();
     }
 
     public int addComponent(@NonNull Class<? extends Component> type) {
