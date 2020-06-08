@@ -6,9 +6,10 @@ import android.os.Build;
 
 import androidx.annotation.DrawableRes;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.example.atomictowers.R;
-import com.example.atomictowers.data.game.service.SavedGameState;
+import com.example.atomictowers.data.game.game_state.SavedGameState;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -21,6 +22,8 @@ import io.reactivex.Single;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 
+import static com.example.atomictowers.util.Util.internalStorageFileExists;
+import static com.example.atomictowers.util.Util.readInternalStorageFile;
 import static com.example.atomictowers.util.Util.readResourceFile;
 import static com.example.atomictowers.util.Util.writeInternalStorageFile;
 
@@ -182,11 +185,25 @@ public class GameRepository {
     }
 
     @NonNull
-    public Completable saveGameState(@NonNull SavedGameState gameState) {
+    public Completable setSaveGameState(@NonNull SavedGameState gameState) {
         return Completable.fromCallable(() -> {
             String gameStateJson = mGson.toJson(gameState);
             writeInternalStorageFile(mApplicationContext, SAVED_GAME_STATE_FILENAME, gameStateJson);
             return Completable.complete();
+        })
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread());
+    }
+
+    @Nullable
+    public Single<SavedGameState> getSavedGameState() {
+        if (!internalStorageFileExists(mApplicationContext, SAVED_GAME_STATE_FILENAME)) {
+            return null;
+        }
+
+        return Single.fromCallable(() -> {
+            String savedStateJson = readInternalStorageFile(mApplicationContext, SAVED_GAME_STATE_FILENAME);
+            return mGson.fromJson(savedStateJson, SavedGameState.class);
         })
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread());

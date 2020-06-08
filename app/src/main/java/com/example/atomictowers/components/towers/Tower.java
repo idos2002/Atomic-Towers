@@ -11,6 +11,7 @@ import com.example.atomictowers.components.Game;
 import com.example.atomictowers.components.atoms.Atom;
 import com.example.atomictowers.data.game.TowerType;
 import com.example.atomictowers.data.game.WeaponType;
+import com.example.atomictowers.data.game.game_state.TowerSavedState;
 import com.example.atomictowers.util.Vector2;
 
 public abstract class Tower extends Component {
@@ -49,6 +50,22 @@ public abstract class Tower extends Component {
         float x = tileIndex.x * getGame().getTileSize();
         float y = tileIndex.y * getGame().getTileSize();
         mPosition = new Vector2(x, y);
+    }
+
+    public Tower(@NonNull Game game, int id, @NonNull TowerType towerType, @NonNull TowerSavedState savedState) {
+        super(game, id, towerType);
+
+        float tileSize = game.getTileSize();
+
+        mRange = towerType.getRange(tileSize);
+        mShootInterval = towerType.shootInterval;
+        mWeaponType = towerType.weaponType;
+
+        mPosition = savedState.position;
+
+        mWeaponType.setStartingPosition(
+            mPosition.add(new Vector2(tileSize * 0.5f, tileSize * 0.5f)));
+        initDrawable();
     }
 
     protected abstract void initDrawable();

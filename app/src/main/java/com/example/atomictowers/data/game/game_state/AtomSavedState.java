@@ -1,4 +1,4 @@
-package com.example.atomictowers.data.game.service;
+package com.example.atomictowers.data.game.game_state;
 
 import androidx.annotation.NonNull;
 

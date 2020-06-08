@@ -42,7 +42,11 @@
         android:id="@+id/gameFragment"
         android:name="com.example.atomictowers.screens.game.GameFragment"
         android:label="fragment_game"
-        tools:layout="@layout/fragment_game" />
+        tools:layout="@layout/fragment_game">
+        <argument
+            android:name="savedGameState"
+            app:argType="com.example.atomictowers.data.game.game_state.SavedGameState" />
+    </fragment>
     <fragment
         android:id="@+id/instructionsFragment"
         android:name="com.example.atomictowers.screens.instructions.InstructionsFragment"

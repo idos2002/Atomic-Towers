@@ -16,6 +16,9 @@ import com.example.atomictowers.data.game.Element;
 import com.example.atomictowers.data.game.GameRepository;
 import com.example.atomictowers.data.game.LevelMap;
 import com.example.atomictowers.data.game.TowerType;
+import com.example.atomictowers.data.game.game_state.AtomSavedState;
+import com.example.atomictowers.data.game.game_state.SavedGameState;
+import com.example.atomictowers.data.game.game_state.TowerSavedState;
 import com.example.atomictowers.drawables.LevelMapDrawable;
 import com.example.atomictowers.util.Vector2;
 
@@ -69,27 +72,58 @@ public class Game {
 
     private final PublishSubject<Pair<Atom, Vector2>> mAtomPositions = PublishSubject.create();
 
-    /**
-     * Creates and initializes a new {@link Game} object.
-     * This constructor should <i>only</i> be used for the  initialization of the {@link Game} object.
-     *
-     * @param gameRepository A {@link GameRepository} instance for the game to retrieve game data from.
-     * @param dimensions     The dimensions of the game window
-     *                       (the dimensions of {@linkplain com.example.atomictowers.screens.game.GameView GameView}).
-     */
-    public Game(@NonNull GameRepository gameRepository, @NonNull Vector2 dimensions) {
-        this.gameRepository = gameRepository;
-        Log.d(TAG, "new Game created");
+//    /**
+//     * Creates and initializes a new {@link Game} object.
+//     * This constructor should <i>only</i> be used for the  initialization of the {@link Game} object.
+//     *
+//     * @param gameRepository A {@link GameRepository} instance for the game to retrieve game data from.
+//     * @param dimensions     The dimensions of the game window
+//     *                       (the dimensions of {@linkplain com.example.atomictowers.screens.game.GameView GameView}).
+//     */
+//    public Game(@NonNull GameRepository gameRepository, @NonNull Vector2 dimensions) {
+//        this.gameRepository = gameRepository;
+//        Log.d(TAG, "New Game created");
+//
+//        mCompositeDisposable.add(gameRepository.getLevel(0).subscribe(level -> {
+//            updateDimensions(dimensions);
+//            mLevelMap = level.map;
+//            mLevelMapDrawable = new LevelMapDrawable(mLevelMap);
+//            mLevelMapDrawable.setBounds(0, 0, (int) mDimensions.x, (int) mDimensions.y);
+//
+//            Log.i(TAG, "Game is initialized");
+//            start();
+//        }, Throwable::printStackTrace));
+//    }
 
-        mCompositeDisposable.add(gameRepository.getLevel(0).subscribe(level -> {
+    public Game(@NonNull GameRepository gameRepository, @NonNull Vector2 dimensions,
+                @NonNull SavedGameState savedGameState) {
+        this.gameRepository = gameRepository;
+        Log.d(TAG, "New Game created");
+
+        mCompositeDisposable.add(gameRepository.getLevel(savedGameState.levelNumber).subscribe(level -> {
             updateDimensions(dimensions);
             mLevelMap = level.map;
             mLevelMapDrawable = new LevelMapDrawable(mLevelMap);
             mLevelMapDrawable.setBounds(0, 0, (int) mDimensions.x, (int) mDimensions.y);
 
+            initComponents(savedGameState);
+
             Log.i(TAG, "Game is initialized");
             start();
         }, Throwable::printStackTrace));
+    }
+
+    private void initComponents(@NonNull SavedGameState savedGameState) {
+        if (savedGameState.atomSavedStates != null) {
+            for (AtomSavedState savedState : savedGameState.atomSavedStates) {
+                addComponent(savedState);
+            }
+        }
+        if (savedGameState.towerSavedStates != null) {
+            for (TowerSavedState towerState : savedGameState.towerSavedStates) {
+                addComponent(towerState);
+            }
+        }
     }
 
     /**
@@ -218,19 +252,46 @@ public class Game {
 
     public int addComponent(@NonNull Class<? extends Component> type, @Nullable Object data) {
         int id = generateComponentId();
-
         try {
             Component component = type.getConstructor(Game.class, int.class, Object.class)
                 .newInstance(this, id, data);
             mComponents.append(id, component);
-            Log.d(TAG, "created new component with id: " + id);
+            Log.d(TAG, "Created new component with id: " + id);
         } catch (IllegalAccessException
             | InstantiationException
             | InvocationTargetException
             | NoSuchMethodException e) {
-            throw new IllegalArgumentException("could not create a new component", e);
+            throw new IllegalArgumentException("Could not create a new component", e);
         }
+        return id;
+    }
 
+    public int addComponent(@NonNull AtomSavedState savedState) {
+        int id = generateComponentId();
+        mCompositeDisposable.add(gameRepository.getElement(savedState.atomicNumber).subscribe(element -> {
+            Component component = new Atom(this, id, element, savedState);
+            mComponents.append(id, component);
+            Log.d(TAG, "Created new component with id: " + id);
+        }, e -> {
+            throw new IllegalArgumentException("Could not create a new component", e);
+        }));
+        return id;
+    }
+
+    public int addComponent(@NonNull TowerSavedState savedState) {
+        int id = generateComponentId();
+        mCompositeDisposable.add(gameRepository.getTowerType(savedState.towerTypeKey).subscribe(towerType -> {
+            Component component;
+            if (savedState.towerTypeKey.equals(TowerType.ELECTRON_SHOOTER_TYPE_KEY)) {
+                component = new ElectronShooter(this, id, towerType, savedState);
+            } else {
+                throw new IllegalArgumentException("Not a valid TowerSavedState object");
+            }
+            mComponents.append(id, component);
+            Log.d(TAG, "Created new component with id: " + id);
+        }, e -> {
+            throw new IllegalArgumentException("Could not create a new component", e);
+        }));
         return id;
     }
 

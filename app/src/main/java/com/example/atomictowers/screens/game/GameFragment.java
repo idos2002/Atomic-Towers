@@ -27,6 +27,7 @@ import androidx.navigation.fragment.NavHostFragment;
 import com.example.atomictowers.MainActivity;
 import com.example.atomictowers.R;
 import com.example.atomictowers.data.game.GameRepository;
+import com.example.atomictowers.data.game.game_state.SavedGameState;
 import com.example.atomictowers.databinding.FragmentGameBinding;
 import com.example.atomictowers.util.Vector2;
 
@@ -90,6 +91,13 @@ public class GameFragment extends Fragment {
         GameRepository repository = GameRepository.getInstance(
             Objects.requireNonNull(getActivity()).getApplicationContext());
 
+        SavedGameState savedGameState;
+        if (getArguments() != null) {
+            savedGameState = GameFragmentArgs.fromBundle(getArguments()).getSavedGameState();
+        } else {
+            throw new IllegalStateException("Saved game state was not passes as argument to GameFragment");
+        }
+
         // See why at:
         // https://stackoverflow.com/questions/16925317/getwidth-and-getheight-always-returning-0-custom-view/16925529
         view.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -97,8 +105,10 @@ public class GameFragment extends Fragment {
             public void onGlobalLayout() {
                 view.getViewTreeObserver().removeOnGlobalLayoutListener(this);
 
-                GameViewModelFactory factory = new GameViewModelFactory(repository,
-                    new Vector2(mBinding.gameView.getWidth(), mBinding.gameView.getHeight()));
+                GameViewModelFactory factory = new GameViewModelFactory(
+                    repository,
+                    new Vector2(mBinding.gameView.getWidth(), mBinding.gameView.getHeight()),
+                    savedGameState);
 
                 mViewModel = new ViewModelProvider(GameFragment.this, factory).get(GameViewModel.class);
 

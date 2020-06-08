@@ -23,7 +23,7 @@
         </activity>
 
         <service
-            android:name=".data.game.service.GameStateService"
+            android:name=".data.game.game_state.GameStateService"
             android:description="@string/game_state_service_description"
             android:exported="false" />
 

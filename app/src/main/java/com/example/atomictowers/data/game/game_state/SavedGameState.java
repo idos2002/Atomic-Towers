@@ -1,4 +1,4 @@
-package com.example.atomictowers.data.game.service;
+package com.example.atomictowers.data.game.game_state;
 
 import android.util.SparseArray;
 
@@ -14,6 +14,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 public class SavedGameState implements Serializable {
+    public SavedGameState(int levelNumber) {
+        this.levelNumber = levelNumber;
+    }
+
     public SavedGameState(int levelNumber, @NonNull SparseArray<Component> components) {
         this.levelNumber = levelNumber;
         initSavedStates(components);

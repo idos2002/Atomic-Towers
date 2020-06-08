@@ -22,4 +22,6 @@
     <string name="about">About</string>
     <string name="credits">Credits</string>
     <string name="credits_content_text"><a href="http://dig.ccmixter.org/files/gurdonark/61313">Memories of Better Times</a> by gurdonark © copyright 2020 Licensed under a Creative Commons <a href="http://creativecommons.org/licenses/by-nc/3.0/">Attribution Noncommercial (3.0)</a> license. Ft: Essesq</string>
+    <string name="resume_last_game_prompt">Resume last game?</string>
+    <string name="new_game">New Game</string>
 </resources>

@@ -5,6 +5,7 @@ import android.content.Context;
 import androidx.annotation.NonNull;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -45,6 +46,11 @@ public final class Util {
         }
 
         return buffer.toString();
+    }
+
+    public static boolean internalStorageFileExists(@NonNull Context context, @NonNull String filename) {
+        File file = context.getFileStreamPath(filename);
+        return file.exists();
     }
 
     public static void writeInternalStorageFile(@NonNull Context context, @NonNull String filename,

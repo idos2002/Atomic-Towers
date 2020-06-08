@@ -1,10 +1,9 @@
-package com.example.atomictowers.data.game.service;
+package com.example.atomictowers.data.game.game_state;
 
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
@@ -22,7 +21,7 @@ public class GameStateService extends Service {
 
     @Override
     public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
-        Toast.makeText(this, "Service started", Toast.LENGTH_SHORT).show();
+        Log.i(TAG, "GameStateService started");
 
         if (intent == null || intent.getExtras() == null) {
             Log.e(TAG, "Intent passed to service is null or has no extras");
@@ -33,7 +32,7 @@ public class GameStateService extends Service {
 
         if (savedGameState != null) {
             saveStateDisposable = GameRepository.getInstance(getApplicationContext())
-                .saveGameState(savedGameState)
+                .setSaveGameState(savedGameState)
                 .subscribe(this::stopSelf, Throwable::printStackTrace);
         } else {
             Log.e(TAG, "intent passes to service is null");
@@ -54,7 +53,6 @@ public class GameStateService extends Service {
         if (saveStateDisposable != null && !saveStateDisposable.isDisposed()) {
             saveStateDisposable.dispose();
         }
-
-        Toast.makeText(this, "Service destroyed", Toast.LENGTH_SHORT).show();
+        Log.i(TAG, "GameStateService destroyed");
     }
 }

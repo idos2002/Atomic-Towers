@@ -8,6 +8,7 @@ import com.example.atomictowers.components.Game;
 import com.example.atomictowers.components.atoms.Atom;
 import com.example.atomictowers.components.towers.weapons.ElectronProjectile;
 import com.example.atomictowers.data.game.TowerType;
+import com.example.atomictowers.data.game.game_state.TowerSavedState;
 import com.example.atomictowers.util.Vector2;
 
 import java.util.concurrent.TimeUnit;
@@ -25,6 +26,13 @@ public class ElectronShooter extends Tower {
 
     public ElectronShooter(@NonNull Game game, int id, @Nullable Object data) {
         super(game, id, data);
+        setGamePauseListener();
+        setAtomRadar();
+    }
+
+    public ElectronShooter(@NonNull Game game, int id, @NonNull TowerType towerType,
+                           @NonNull TowerSavedState savedState) {
+        super(game, id, towerType, savedState);
         setGamePauseListener();
         setAtomRadar();
     }

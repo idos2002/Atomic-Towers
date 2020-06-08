@@ -12,6 +12,7 @@ import com.example.atomictowers.components.Game;
 import com.example.atomictowers.components.KineticComponent;
 import com.example.atomictowers.data.game.Element;
 import com.example.atomictowers.data.game.LevelMap;
+import com.example.atomictowers.data.game.game_state.AtomSavedState;
 import com.example.atomictowers.drawables.AtomDrawable;
 import com.example.atomictowers.util.Vector2;
 
@@ -54,7 +55,6 @@ public class Atom extends KineticComponent {
         if (!(data instanceof Element)) {
             throw new IllegalArgumentException("`data` is not of type " + Element.class.getName());
         }
-
         Element element = (Element) data;
 
         mAtomicNumber = element.protons;
@@ -71,6 +71,33 @@ public class Atom extends KineticComponent {
         mDrawable = new AtomDrawable(this, mCompositeDisposable);
 
         mPosition.onNext(getGame().getMap().getStartingPosition(getGame()));
+        mCompositeDisposable.add(mPosition.subscribe(
+            position -> getGame().postAtomPosition(this, position),
+            Throwable::printStackTrace));
+
+        setTarget(mMap.getPositionFromPath(getGame(), mPathIndex));
+        setVelocity(mSpeed);
+    }
+
+    public Atom(@NonNull Game game, int id, @NonNull Element element, @NonNull AtomSavedState savedState) {
+        super(game, id, element);
+
+        mAtomicNumber = element.protons;
+
+        mMap = getGame().getMap();
+        if (mMap.getPath().isEmpty()) {
+            destroy();
+            getGame().finish();
+        }
+
+        initAtomTypeFields(element);
+
+        mStrength = savedState.strength;
+        mPathIndex = savedState.pathIndex;
+        mPosition.onNext(savedState.position);
+
+        mDrawable = new AtomDrawable(this, mCompositeDisposable);
+
         mCompositeDisposable.add(mPosition.subscribe(
             position -> getGame().postAtomPosition(this, position),
             Throwable::printStackTrace));

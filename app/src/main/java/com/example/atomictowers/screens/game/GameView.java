@@ -17,8 +17,8 @@ import androidx.lifecycle.OnLifecycleEvent;
 
 import com.example.atomictowers.MainActivity;
 import com.example.atomictowers.components.Game;
-import com.example.atomictowers.data.game.service.GameStateService;
-import com.example.atomictowers.data.game.service.SavedGameState;
+import com.example.atomictowers.data.game.game_state.GameStateService;
+import com.example.atomictowers.data.game.game_state.SavedGameState;
 import com.example.atomictowers.util.Vector2;
 
 public class GameView extends SurfaceView implements Runnable, LifecycleObserver {
