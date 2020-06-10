@@ -7,6 +7,7 @@ import com.google.gson.annotations.SerializedName;
 
 public class TowerType {
     public static final String ELECTRON_SHOOTER_TYPE_KEY = "electronShooter";
+    public static final String PHOTONIC_LASER_TYPE_KEY = "photonicLaser";
 
     @SerializedName("weapon")
     public WeaponType weaponType;

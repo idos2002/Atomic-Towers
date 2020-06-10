@@ -22,7 +22,7 @@ class GameCache {
             return null;
         }
 
-        return mLevels.get(level);
+        return new Level(mLevels.get(level));
     }
 
     void setLevels(@NonNull List<Level> levels) {

@@ -24,8 +24,8 @@ public class LevelMapDrawable extends Drawable {
     public LevelMapDrawable(@NonNull LevelMap map) {
         mMap = map;
 
-        mEmptyTilePaint.setColor(0xff00c853);
-        mPathTilePaint.setColor(0xff795548);
+        mEmptyTilePaint.setColor(0xff00e266);
+        mPathTilePaint.setColor(0xfffbc02d);
     }
 
     @Override
@@ -50,7 +50,7 @@ public class LevelMapDrawable extends Drawable {
                             x + mTileSize, y + mTileSize,
                             mPathTilePaint);
                         break;
-                    case LevelMap.TILE_EMPTY:
+                    default:
                         canvas.drawRect(x, y,
                             x + mTileSize, y + mTileSize,
                             mEmptyTilePaint);

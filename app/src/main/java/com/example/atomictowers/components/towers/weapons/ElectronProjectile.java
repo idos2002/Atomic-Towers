@@ -9,15 +9,24 @@ import com.example.atomictowers.components.Game;
 import com.example.atomictowers.components.atoms.Atom;
 import com.example.atomictowers.drawables.weapons.ElectronProjectileDrawable;
 
-public class ElectronProjectile extends Weapon {
+public class ElectronProjectile extends KineticWeapon {
     private static final String TAG = ElectronProjectile.class.getSimpleName();
 
     private ElectronProjectileDrawable mDrawable;
 
     public ElectronProjectile(Game game, int id, Object data) {
         super(game, id, data);
-
         mDrawable = new ElectronProjectileDrawable(this, game.getTileSize());
+    }
+
+    @Override
+    public void update(float timeDiff) {
+        super.update(timeDiff);
+        // In order to fix bug where electrons would get stuck on the game screen because
+        // of not hitting the target
+        if (getVelocity().magnitude() < 0.01) {
+            destroy();
+        }
     }
 
     @Override

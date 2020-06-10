@@ -12,8 +12,11 @@ import androidx.annotation.Nullable;
 
 import com.example.atomictowers.components.atoms.Atom;
 import com.example.atomictowers.components.towers.ElectronShooter;
+import com.example.atomictowers.components.towers.PhotonicLaser;
+import com.example.atomictowers.components.towers.Tower;
 import com.example.atomictowers.data.game.Element;
 import com.example.atomictowers.data.game.GameRepository;
+import com.example.atomictowers.data.game.Level;
 import com.example.atomictowers.data.game.LevelMap;
 import com.example.atomictowers.data.game.TowerType;
 import com.example.atomictowers.data.game.game_state.AtomSavedState;
@@ -53,7 +56,7 @@ public class Game {
     private Drawable mLevelMapDrawable;
 
     // TODO: Change value by player's choosing and add scoring system
-    private String mPickedTowerTypeKey = TowerType.ELECTRON_SHOOTER_TYPE_KEY;
+    private String mPickedTowerTypeKey = TowerType.PHOTONIC_LASER_TYPE_KEY;
 
     /**
      * Used as a counter for {@link Component} ID's.
@@ -72,29 +75,14 @@ public class Game {
 
     private final PublishSubject<Pair<Atom, Vector2>> mAtomPositions = PublishSubject.create();
 
-//    /**
-//     * Creates and initializes a new {@link Game} object.
-//     * This constructor should <i>only</i> be used for the  initialization of the {@link Game} object.
-//     *
-//     * @param gameRepository A {@link GameRepository} instance for the game to retrieve game data from.
-//     * @param dimensions     The dimensions of the game window
-//     *                       (the dimensions of {@linkplain com.example.atomictowers.screens.game.GameView GameView}).
-//     */
-//    public Game(@NonNull GameRepository gameRepository, @NonNull Vector2 dimensions) {
-//        this.gameRepository = gameRepository;
-//        Log.d(TAG, "New Game created");
-//
-//        mCompositeDisposable.add(gameRepository.getLevel(0).subscribe(level -> {
-//            updateDimensions(dimensions);
-//            mLevelMap = level.map;
-//            mLevelMapDrawable = new LevelMapDrawable(mLevelMap);
-//            mLevelMapDrawable.setBounds(0, 0, (int) mDimensions.x, (int) mDimensions.y);
-//
-//            Log.i(TAG, "Game is initialized");
-//            start();
-//        }, Throwable::printStackTrace));
-//    }
-
+    /**
+     * Creates and initializes a new {@link Game} object.
+     * This constructor should <i>only</i> be used for the  initialization of the {@link Game} object.
+     *
+     * @param gameRepository A {@link GameRepository} instance for the game to retrieve game data from.
+     * @param dimensions     The dimensions of the game window
+     *                       (the dimensions of {@linkplain com.example.atomictowers.screens.game.GameView GameView}).
+     */
     public Game(@NonNull GameRepository gameRepository, @NonNull Vector2 dimensions,
                 @NonNull SavedGameState savedGameState) {
         this.gameRepository = gameRepository;
@@ -211,33 +199,34 @@ public class Game {
 
     public int getLevelNumber() {
         // TODO: Update this method
-        return 0;
+        return Level.LEVEL_ONE;
     }
 
-    // TODO: Fix the case when map is not initialized yet - will produce NullPointerException.
-    //  A solution could be adding a loading screen, until the game is fully initialized
-    //  (like other games).
     @NonNull
     public LevelMap getMap() {
         return mLevelMap;
     }
 
-    // TODO: Add check whether there is already a tower on a tile
     public void putTowerOnMap(@NonNull Vector2 tileIndex) {
-        mCompositeDisposable.add(
-            gameRepository.getTowerType(mPickedTowerTypeKey)
-                .subscribe(towerType -> {
-                    towerType.setTileIndex(tileIndex);
-                    addComponent(convertTowerTyeKeyToClass(mPickedTowerTypeKey), towerType);
-                }, Throwable::printStackTrace));
+        if (mLevelMap.getAtIndex(tileIndex) == LevelMap.TILE_EMPTY) {
+            mLevelMap.setAtIndex(tileIndex, LevelMap.TILE_TOWER);
+            mCompositeDisposable.add(
+                gameRepository.getTowerType(mPickedTowerTypeKey)
+                    .subscribe(towerType -> {
+                        towerType.setTileIndex(tileIndex);
+                        addComponent(convertTowerTypeKeyToClass(mPickedTowerTypeKey), towerType);
+                    }, Throwable::printStackTrace));
+        }
     }
 
-    private Class<? extends Component> convertTowerTyeKeyToClass(@NonNull String towerTypeKey) {
+    private Class<? extends Tower> convertTowerTypeKeyToClass(@NonNull String towerTypeKey) {
         switch (towerTypeKey) {
             case TowerType.ELECTRON_SHOOTER_TYPE_KEY:
                 return ElectronShooter.class;
+            case TowerType.PHOTONIC_LASER_TYPE_KEY:
+                return PhotonicLaser.class;
             default:
-                throw new IllegalArgumentException("towerTypeKey is not a valid");
+                throw new IllegalArgumentException("towerTypeKey `" + towerTypeKey + "` is not a valid");
         }
     }
 
@@ -281,13 +270,13 @@ public class Game {
     public int addComponent(@NonNull TowerSavedState savedState) {
         int id = generateComponentId();
         mCompositeDisposable.add(gameRepository.getTowerType(savedState.towerTypeKey).subscribe(towerType -> {
-            Component component;
-            if (savedState.towerTypeKey.equals(TowerType.ELECTRON_SHOOTER_TYPE_KEY)) {
-                component = new ElectronShooter(this, id, towerType, savedState);
-            } else {
-                throw new IllegalArgumentException("Not a valid TowerSavedState object");
-            }
+            Class<? extends Tower> type = convertTowerTypeKeyToClass(savedState.towerTypeKey);
+            Component component =
+                type.getConstructor(Game.class, int.class, TowerType.class, TowerSavedState.class)
+                    .newInstance(this, id, towerType, savedState);
             mComponents.append(id, component);
+
+            mLevelMap.setAtPosition(savedState.position, mTileSize, LevelMap.TILE_TOWER);
             Log.d(TAG, "Created new component with id: " + id);
         }, e -> {
             throw new IllegalArgumentException("Could not create a new component", e);
@@ -307,6 +296,14 @@ public class Game {
 
     public void postAtomPosition(Atom atom, Vector2 position) {
         mAtomPositions.onNext(new Pair<>(atom, position));
+    }
+
+    public void increaseEnergy() {
+
+    }
+
+    public void decreaseHealth(int health) {
+
     }
 
     public Observable<Pair<Atom, Vector2>> getAtomPositionObservable() {

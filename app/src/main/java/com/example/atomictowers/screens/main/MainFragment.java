@@ -15,11 +15,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
-import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.atomictowers.R;
 import com.example.atomictowers.data.game.GameRepository;
+import com.example.atomictowers.data.game.Level;
 import com.example.atomictowers.data.game.game_state.SavedGameState;
 import com.example.atomictowers.databinding.FragmentMainBinding;
 import com.example.atomictowers.screens.main.MainFragmentDirections.ActionMainFragmentToGameFragment;
@@ -34,29 +34,24 @@ import io.reactivex.disposables.Disposable;
  */
 public class MainFragment extends Fragment {
     private static final String TAG = MainFragment.class.getSimpleName();
-    private MainViewModel mViewModel;
-    private FragmentMainBinding mBinding;
-
     private Disposable mGameStateDisposable;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
-        mBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_main, container, false);
-        mViewModel = new ViewModelProvider(this).get(MainViewModel.class);
-
+        FragmentMainBinding mBinding = DataBindingUtil.inflate(
+            inflater, R.layout.fragment_main, container, false);
         mBinding.setLifecycleOwner(this);
 
         mBinding.startButton.setOnClickListener(view -> {
             GameRepository repository = GameRepository.getInstance(
                 Objects.requireNonNull(getActivity()).getApplicationContext());
 
-
             Single<SavedGameState> savedGameStateSingle = repository.getSavedGameState();
             if (savedGameStateSingle == null) {
                 ActionMainFragmentToGameFragment action =
-                    MainFragmentDirections.actionMainFragmentToGameFragment(new SavedGameState(0)); // TODO: Update this!
+                    MainFragmentDirections.actionMainFragmentToGameFragment(new SavedGameState(Level.LEVEL_ONE)); // TODO: Update this!
                 NavHostFragment.findNavController(this).navigate(action);
             } else {
                 mGameStateDisposable = savedGameStateSingle.subscribe(savedGameState -> {
@@ -125,11 +120,19 @@ public class MainFragment extends Fragment {
 
         layout.findViewById(R.id.new_game_button).setOnClickListener(view -> {
             ActionMainFragmentToGameFragment action =
-                MainFragmentDirections.actionMainFragmentToGameFragment(new SavedGameState(0)); // TODO: Update this!
+                MainFragmentDirections.actionMainFragmentToGameFragment(new SavedGameState(Level.LEVEL_ONE)); // TODO: Update this!
             NavHostFragment.findNavController(this).navigate(action);
             dialog.dismiss();
         });
 
         dialog.show();
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        if (!mGameStateDisposable.isDisposed()) {
+            mGameStateDisposable.dispose();
+        }
     }
 }

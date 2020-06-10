@@ -1,10 +1,18 @@
 {
   "electronShooter": {
-    "relativeRange": 3,
-    "shootInterval": 500,
+    "relativeRange": 2,
+    "shootInterval": 1000,
     "weapon": {
-      "speed": 15,
+      "speed": 12,
       "relativeDamage": 1
+    }
+  },
+  "photonicLaser": {
+    "relativeRange": 4,
+    "shootInterval": 0,
+    "weapon": {
+      "speed": 0,
+      "relativeDamage": 0.005
     }
   }
 }

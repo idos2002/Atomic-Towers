@@ -3,7 +3,6 @@ package com.example.atomictowers.components.atoms;
 import android.annotation.SuppressLint;
 import android.graphics.Canvas;
 import android.graphics.Color;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -202,8 +201,6 @@ public class Atom extends KineticComponent {
         ) {
             changeElement();
         }
-
-        Log.d(TAG, "damaged: " + toString());
     }
 
     @Override

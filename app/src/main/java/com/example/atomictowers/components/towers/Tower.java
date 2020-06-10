@@ -15,6 +15,7 @@ import com.example.atomictowers.data.game.game_state.TowerSavedState;
 import com.example.atomictowers.util.Vector2;
 
 public abstract class Tower extends Component {
+    private static final String TAG = Tower.class.getSimpleName();
 
     /**
      * Top-left corner of the tile

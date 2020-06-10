@@ -7,7 +7,7 @@ import androidx.annotation.NonNull;
 import com.example.atomictowers.components.Component;
 import com.example.atomictowers.components.atoms.Atom;
 import com.example.atomictowers.components.towers.Tower;
-import com.example.atomictowers.components.towers.weapons.Weapon;
+import com.example.atomictowers.components.towers.weapons.KineticWeapon;
 import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
@@ -28,7 +28,7 @@ public class SavedGameState implements Serializable {
             int key = components.keyAt(i);
             Component component = components.get(key);
 
-            if (component == null || component instanceof Weapon) {
+            if (component == null || component instanceof KineticWeapon) {
                 break;
             } else if (component instanceof Atom) {
                 Atom atom = (Atom) component;

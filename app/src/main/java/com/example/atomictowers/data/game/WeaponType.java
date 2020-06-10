@@ -4,7 +4,7 @@ import androidx.annotation.NonNull;
 
 import com.example.atomictowers.components.Game;
 import com.example.atomictowers.components.atoms.Atom;
-import com.example.atomictowers.components.towers.weapons.Weapon;
+import com.example.atomictowers.components.towers.weapons.KineticWeapon;
 import com.example.atomictowers.util.Vector2;
 import com.google.gson.annotations.SerializedName;
 
@@ -20,7 +20,7 @@ public class WeaponType {
     public int level = 1;
 
     /**
-     * The magnitude of the {@linkplain Weapon Weapon}'s
+     * The magnitude of the {@linkplain KineticWeapon KineticWeapon}'s
      * velocity. If the weapon is a beam for example, the speed will be 0.
      */
     @SerializedName("speed")
