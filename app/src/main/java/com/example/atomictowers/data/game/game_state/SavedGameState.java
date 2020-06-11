@@ -5,9 +5,11 @@ import android.util.SparseArray;
 import androidx.annotation.NonNull;
 
 import com.example.atomictowers.components.Component;
+import com.example.atomictowers.components.Game;
 import com.example.atomictowers.components.atoms.Atom;
 import com.example.atomictowers.components.towers.Tower;
 import com.example.atomictowers.components.towers.weapons.KineticWeapon;
+import com.example.atomictowers.data.game.Level;
 import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
@@ -18,8 +20,10 @@ public class SavedGameState implements Serializable {
         this.levelNumber = levelNumber;
     }
 
-    public SavedGameState(int levelNumber, @NonNull SparseArray<Component> components) {
+    public SavedGameState(int levelNumber, int health, int energy, @NonNull SparseArray<Component> components) {
         this.levelNumber = levelNumber;
+        this.health = health;
+        this.energy = energy;
         initSavedStates(components);
     }
 
@@ -47,7 +51,13 @@ public class SavedGameState implements Serializable {
     }
 
     @SerializedName("level")
-    public int levelNumber;
+    public int levelNumber = Level.LEVEL_ONE;
+
+    @SerializedName("health")
+    public int health = Game.MAX_HEALTH;
+
+    @SerializedName("energy")
+    public int energy = 0;
 
     @SerializedName("componentSavedStates")
     public ArrayList<AtomSavedState> atomSavedStates = new ArrayList<>();

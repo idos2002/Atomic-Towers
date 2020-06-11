@@ -112,7 +112,7 @@ public class GameFragment extends Fragment {
 
                 mViewModel = new ViewModelProvider(GameFragment.this, factory).get(GameViewModel.class);
 
-                mBinding.setGameViewModel(mViewModel);
+                mBinding.setViewModel(mViewModel);
                 mBinding.gameView.setGame(mViewModel.game);
 
                 setListeners();

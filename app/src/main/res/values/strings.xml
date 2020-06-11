@@ -7,7 +7,7 @@
     <string name="game_state_service_description">Saves current paused Atomic Towers game state</string>
     <string name="start">Start</string>
     <string name="towers">Towers</string>
-    <string name="energy_count"><b>Energy:</b>  %1$d J</string>
+    <string name="energy_sidebar_indicator"><b>Energy:</b> \u00A0 %1$d J</string>
     <string name="pause">Pause</string>
     <string name="electron_shooter">Electron Shooter</string>
     <string name="resume">Resume</string>

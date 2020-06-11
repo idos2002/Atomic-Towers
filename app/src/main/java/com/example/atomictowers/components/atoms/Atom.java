@@ -164,7 +164,11 @@ public class Atom extends KineticComponent {
 
     @Override
     public void update(float timeDiff) {
-        if (mAtomicNumber <= 0 || mPosition.getValue().x > getGame().getDimensions().x) {
+        if (mAtomicNumber <= 0) {
+            getGame().increaseEnergy();
+            destroy();
+        } else if (mPosition.getValue().x > getGame().getDimensions().x) {
+            getGame().decreaseHealth(mStrength);
             destroy();
         } else {
             if (isNearTarget(getVelocity().magnitude() * (0.1f / MAX_SPEED))) {
@@ -216,6 +220,7 @@ public class Atom extends KineticComponent {
 
     private void changeElement() {
         mAtomicNumber--;
+        getGame().increaseEnergy();
         mCompositeDisposable.add(getGame().gameRepository.getElement(mAtomicNumber)
             .subscribe(this::initAtomTypeFields, Throwable::printStackTrace));
     }

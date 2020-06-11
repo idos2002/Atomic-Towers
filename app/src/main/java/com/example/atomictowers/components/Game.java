@@ -26,10 +26,14 @@ import com.example.atomictowers.drawables.LevelMapDrawable;
 import com.example.atomictowers.util.Vector2;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observable;
 import io.reactivex.disposables.CompositeDisposable;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.subjects.BehaviorSubject;
 import io.reactivex.subjects.PublishSubject;
 
@@ -44,9 +48,14 @@ public class Game {
      */
     public static final int DAMAGE_MULTIPLIER = 100;
 
+    public static final int MAX_HEALTH = 100 * DAMAGE_MULTIPLIER;
+
     public final GameRepository gameRepository;
 
     private final CompositeDisposable mCompositeDisposable = new CompositeDisposable();
+    private Disposable mElementsDisposable, mAtomCreatorDisposable;
+    private Random mRandom = new Random();
+
     private BehaviorSubject<Boolean> mGamePausedSubject = BehaviorSubject.createDefault(false);
 
     private float mTileSize;
@@ -55,8 +64,30 @@ public class Game {
     private LevelMap mLevelMap;
     private Drawable mLevelMapDrawable;
 
-    // TODO: Change value by player's choosing and add scoring system
-    private String mPickedTowerTypeKey = TowerType.PHOTONIC_LASER_TYPE_KEY;
+    private String mSelectedTowerTypeKey;
+
+
+    private BehaviorSubject<Integer> mHealth = BehaviorSubject.createDefault(MAX_HEALTH);
+
+    public int getHealth() {
+        return mHealth.getValue();
+    }
+
+    public Observable<Integer> getHealthObservable() {
+        return mHealth.hide();
+    }
+
+
+    private BehaviorSubject<Integer> mEnergy = BehaviorSubject.createDefault(0);
+
+    public int getEnergy() {
+        return mEnergy.getValue();
+    }
+
+    public Observable<Integer> getEnergyObservable() {
+        return mEnergy.hide();
+    }
+
 
     /**
      * Used as a counter for {@link Component} ID's.
@@ -87,6 +118,9 @@ public class Game {
                 @NonNull SavedGameState savedGameState) {
         this.gameRepository = gameRepository;
         Log.d(TAG, "New Game created");
+
+        mHealth.onNext(savedGameState.health);
+        mEnergy.onNext(savedGameState.energy);
 
         mCompositeDisposable.add(gameRepository.getLevel(savedGameState.levelNumber).subscribe(level -> {
             updateDimensions(dimensions);
@@ -120,23 +154,27 @@ public class Game {
      */
     @SuppressLint("RxDefaultScheduler")
     private void start() {
-        mCompositeDisposable.add(gameRepository.getElements().subscribe(elements -> {
-            // Used as a bug check - should not display this atom.
-            addComponent(Atom.class, elements.get(0));
-
-            mCompositeDisposable.add(
-                Observable.interval(0, 6000, TimeUnit.MILLISECONDS)
-                    .subscribe(l -> addComponent(Atom.class, elements.get(Element.OXYGEN)),
-                        Throwable::printStackTrace));
-        }, Throwable::printStackTrace));
+        List<Integer> waterElements = Arrays.asList(Element.HYDROGEN, Element.OXYGEN);
+        mElementsDisposable = gameRepository.getElements().subscribe(elements -> {
+            mAtomCreatorDisposable = Observable.interval(500, 4500, TimeUnit.MILLISECONDS)
+                .subscribe(l -> addComponent(Atom.class, elements.get(waterElements.get(mRandom.nextInt(2)))),
+                    Throwable::printStackTrace);
+        }, Throwable::printStackTrace);
     }
 
     public void pause() {
         mGamePausedSubject.onNext(true);
+        if (mAtomCreatorDisposable != null && !mAtomCreatorDisposable.isDisposed()) {
+            mAtomCreatorDisposable.dispose();
+        }
+        if (mElementsDisposable != null && !mElementsDisposable.isDisposed()) {
+            mElementsDisposable.dispose();
+        }
     }
 
     public void resume() {
         mGamePausedSubject.onNext(false);
+        start();
     }
 
     public boolean isGamePaused() {
@@ -207,14 +245,18 @@ public class Game {
         return mLevelMap;
     }
 
+    public void selectTowerType(@NonNull String selectedTowerTypeKey) {
+        mSelectedTowerTypeKey = selectedTowerTypeKey;
+    }
+
     public void putTowerOnMap(@NonNull Vector2 tileIndex) {
-        if (mLevelMap.getAtIndex(tileIndex) == LevelMap.TILE_EMPTY) {
+        if (mSelectedTowerTypeKey != null && mLevelMap.getAtIndex(tileIndex) == LevelMap.TILE_EMPTY) {
             mLevelMap.setAtIndex(tileIndex, LevelMap.TILE_TOWER);
             mCompositeDisposable.add(
-                gameRepository.getTowerType(mPickedTowerTypeKey)
+                gameRepository.getTowerType(mSelectedTowerTypeKey)
                     .subscribe(towerType -> {
                         towerType.setTileIndex(tileIndex);
-                        addComponent(convertTowerTypeKeyToClass(mPickedTowerTypeKey), towerType);
+                        addComponent(convertTowerTypeKeyToClass(mSelectedTowerTypeKey), towerType);
                     }, Throwable::printStackTrace));
         }
     }
@@ -299,11 +341,11 @@ public class Game {
     }
 
     public void increaseEnergy() {
-
+        mEnergy.onNext(mEnergy.getValue() + 1);
     }
 
-    public void decreaseHealth(int health) {
-
+    public void decreaseHealth(int atomStrength) {
+        mHealth.onNext(mHealth.getValue() - atomStrength);
     }
 
     public Observable<Pair<Atom, Vector2>> getAtomPositionObservable() {

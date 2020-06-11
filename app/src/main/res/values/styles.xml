@@ -46,7 +46,7 @@
 
     <!-- Progress bar -->
     <style name="GameProgressBar" parent="Widget.AppCompat.ProgressBar.Horizontal">
-        <item name="android:minHeight">8dp</item>
+        <item name="android:minHeight">12dp</item>
         <item name="android:progressDrawable">@drawable/progress_drawable</item>
     </style>
 
