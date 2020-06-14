@@ -20,10 +20,12 @@ public class SavedGameState implements Serializable {
         this.levelNumber = levelNumber;
     }
 
-    public SavedGameState(int levelNumber, int health, int energy, @NonNull SparseArray<Component> components) {
+    public SavedGameState(int levelNumber, int health, int energy, int numberOfCreatedAtoms,
+                          @NonNull SparseArray<Component> components) {
         this.levelNumber = levelNumber;
         this.health = health;
         this.energy = energy;
+        this.numberOfCreatedAtoms = numberOfCreatedAtoms;
         initSavedStates(components);
     }
 
@@ -40,7 +42,8 @@ public class SavedGameState implements Serializable {
                     atom.getAtomicNumber(),
                     atom.getStrength(),
                     atom.getPathIndex(),
-                    atom.getPosition()));
+                    atom.getPosition(),
+                    atom.isLastAtom()));
             } else if (component instanceof Tower) {
                 Tower tower = (Tower) component;
                 towerSavedStates.add(new TowerSavedState(
@@ -58,6 +61,9 @@ public class SavedGameState implements Serializable {
 
     @SerializedName("energy")
     public int energy = 0;
+
+    @SerializedName("numberOfCreatedAtoms")
+    public int numberOfCreatedAtoms = 0;
 
     @SerializedName("componentSavedStates")
     public ArrayList<AtomSavedState> atomSavedStates = new ArrayList<>();

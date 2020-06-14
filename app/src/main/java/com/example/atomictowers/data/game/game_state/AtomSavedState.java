@@ -11,11 +11,13 @@ public class AtomSavedState implements Serializable {
     public AtomSavedState() {
     }
 
-    public AtomSavedState(int atomicNumber, int strength, int pathIndex, @NonNull Vector2 position) {
+    public AtomSavedState(int atomicNumber, int strength, int pathIndex, @NonNull Vector2 position,
+                          boolean isLastAtom) {
         this.atomicNumber = atomicNumber;
         this.strength = strength;
         this.pathIndex = pathIndex;
         this.position = position;
+        this.isLastAtom = isLastAtom;
     }
 
     @SerializedName("atomicNumber")
@@ -29,4 +31,7 @@ public class AtomSavedState implements Serializable {
 
     @SerializedName("position")
     public Vector2 position;
+
+    @SerializedName("isLastAtom")
+    public boolean isLastAtom = false;
 }

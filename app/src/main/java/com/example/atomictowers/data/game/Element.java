@@ -32,6 +32,8 @@ public class Element {
     @SerializedName("summary")
     public String summary;
 
+    public transient boolean isLastAtom = false;
+
     public Element(@NonNull Element element) {
         name = element.name;
         symbol = element.symbol;

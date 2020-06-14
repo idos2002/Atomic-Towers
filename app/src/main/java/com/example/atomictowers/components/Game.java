@@ -1,6 +1,5 @@
 package com.example.atomictowers.components;
 
-import android.annotation.SuppressLint;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.util.Log;
@@ -11,10 +10,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.atomictowers.components.atoms.Atom;
+import com.example.atomictowers.components.atoms.AtomSequencer;
 import com.example.atomictowers.components.towers.ElectronShooter;
 import com.example.atomictowers.components.towers.PhotonicLaser;
 import com.example.atomictowers.components.towers.Tower;
-import com.example.atomictowers.data.game.Element;
 import com.example.atomictowers.data.game.GameRepository;
 import com.example.atomictowers.data.game.Level;
 import com.example.atomictowers.data.game.LevelMap;
@@ -26,14 +25,9 @@ import com.example.atomictowers.drawables.LevelMapDrawable;
 import com.example.atomictowers.util.Vector2;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
-import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observable;
 import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.disposables.Disposable;
 import io.reactivex.subjects.BehaviorSubject;
 import io.reactivex.subjects.PublishSubject;
 
@@ -48,13 +42,10 @@ public class Game {
      */
     public static final int DAMAGE_MULTIPLIER = 100;
 
-    public static final int MAX_HEALTH = 100 * DAMAGE_MULTIPLIER;
+    public static final int MAX_HEALTH = 10 * DAMAGE_MULTIPLIER;
 
     public final GameRepository gameRepository;
-
     private final CompositeDisposable mCompositeDisposable = new CompositeDisposable();
-    private Disposable mElementsDisposable, mAtomCreatorDisposable;
-    private Random mRandom = new Random();
 
     private BehaviorSubject<Boolean> mGamePausedSubject = BehaviorSubject.createDefault(false);
 
@@ -63,6 +54,25 @@ public class Game {
 
     private LevelMap mLevelMap;
     private Drawable mLevelMapDrawable;
+
+    /**
+     * Used as a counter for {@link Component} ID's.
+     * Should only be used by {@link #generateComponentId()}!
+     */
+    private volatile int mIdCounter = 0;
+
+    /**
+     * Used to index all {@link Component}s on screen.
+     * {@link SparseArray} is used instead of {@link java.util.HashMap} because of IntelliJ warning.
+     *
+     * @see <a href="https://stackoverflow.com/questions/25560629/sparsearray-vs-hashmap">
+     * SparseArray vs HashMap (Stack Overflow)</a>
+     */
+    private final SparseArray<Component> mComponents = new SparseArray<>();
+
+    private final PublishSubject<Pair<Atom, Vector2>> mAtomPositions = PublishSubject.create();
+
+    private AtomSequencer mAtomSequencer;
 
     private String mSelectedTowerTypeKey;
 
@@ -90,23 +100,6 @@ public class Game {
 
 
     /**
-     * Used as a counter for {@link Component} ID's.
-     * Should only be used by {@link #generateComponentId()}!
-     */
-    private volatile int mIdCounter = 0;
-
-    /**
-     * Used to index all {@link Component}s on screen.
-     * {@link SparseArray} is used instead of {@link java.util.HashMap} because of IntelliJ warning.
-     *
-     * @see <a href="https://stackoverflow.com/questions/25560629/sparsearray-vs-hashmap">
-     * SparseArray vs HashMap (Stack Overflow)</a>
-     */
-    private final SparseArray<Component> mComponents = new SparseArray<>();
-
-    private final PublishSubject<Pair<Atom, Vector2>> mAtomPositions = PublishSubject.create();
-
-    /**
      * Creates and initializes a new {@link Game} object.
      * This constructor should <i>only</i> be used for the  initialization of the {@link Game} object.
      *
@@ -127,6 +120,12 @@ public class Game {
             mLevelMap = level.map;
             mLevelMapDrawable = new LevelMapDrawable(mLevelMap);
             mLevelMapDrawable.setBounds(0, 0, (int) mDimensions.x, (int) mDimensions.y);
+
+            mAtomSequencer = new AtomSequencer(
+                this,
+                level.elementsAtomicNumbers,
+                level.atomSequence,
+                savedGameState.numberOfCreatedAtoms);
 
             initComponents(savedGameState);
 
@@ -149,27 +148,16 @@ public class Game {
     }
 
     /**
-     * Called Only when the {@link Game} object is fully initialized.
+     * Called <i>Only</i> when the {@link Game} object is fully initialized.
      * This is the <i>only</i> starting point of the game.
      */
-    @SuppressLint("RxDefaultScheduler")
     private void start() {
-        List<Integer> waterElements = Arrays.asList(Element.HYDROGEN, Element.OXYGEN);
-        mElementsDisposable = gameRepository.getElements().subscribe(elements -> {
-            mAtomCreatorDisposable = Observable.interval(500, 4500, TimeUnit.MILLISECONDS)
-                .subscribe(l -> addComponent(Atom.class, elements.get(waterElements.get(mRandom.nextInt(2)))),
-                    Throwable::printStackTrace);
-        }, Throwable::printStackTrace);
+        mAtomSequencer.start();
     }
 
     public void pause() {
         mGamePausedSubject.onNext(true);
-        if (mAtomCreatorDisposable != null && !mAtomCreatorDisposable.isDisposed()) {
-            mAtomCreatorDisposable.dispose();
-        }
-        if (mElementsDisposable != null && !mElementsDisposable.isDisposed()) {
-            mElementsDisposable.dispose();
-        }
+        mAtomSequencer.pause();
     }
 
     public void resume() {
@@ -277,10 +265,6 @@ public class Game {
         return mComponents.clone();
     }
 
-    public int addComponent(@NonNull Class<? extends Component> type) {
-        return addComponent(type, null);
-    }
-
     public int addComponent(@NonNull Class<? extends Component> type, @Nullable Object data) {
         int id = generateComponentId();
         try {
@@ -326,6 +310,15 @@ public class Game {
         return id;
     }
 
+    /**
+     * Generates a unique new {@link Component} ID.
+     *
+     * @return a unique {@link Component} ID
+     */
+    private synchronized int generateComponentId() {
+        return ++mIdCounter;
+    }
+
     @Nullable
     public Component getComponent(int componentId) {
         return mComponents.get(componentId);
@@ -352,16 +345,12 @@ public class Game {
         return mAtomPositions.hide();
     }
 
-    public void finish() {
-        mCompositeDisposable.dispose();
+    public int getNumberOfCreatedAtoms() {
+        return mAtomSequencer.getNumberOfCreatedAtoms();
     }
 
-    /**
-     * Generates a unique new {@link Component} ID.
-     *
-     * @return a unique {@link Component} ID
-     */
-    private synchronized int generateComponentId() {
-        return ++mIdCounter;
+    public void finish() {
+        mCompositeDisposable.dispose();
+        mAtomSequencer.destroy();
     }
 }

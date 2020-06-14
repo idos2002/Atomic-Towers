@@ -12,20 +12,14 @@ import java.util.List;
 public class LevelMap {
     private static final String TAG = LevelMap.class.getSimpleName();
 
-    /**
-     * A tile on which both atoms and towers cannot exist upon.
-     */
-    public static final int TILE_INVALID = -1;
     public static final int TILE_EMPTY = 0;
     public static final int TILE_PATH = 1;
     public static final int TILE_TOWER = 2;
 
-    // TODO: Dynamically generate map from path in JSON. Should probably switch to a matrix (2D array).
-    @SerializedName("layout")
-    private int[] mMap;
-
     @SerializedName("path")
     private List<Vector2> mPath;
+
+    private transient int[] mMap;
 
     @SerializedName("cols")
     public int cols;
@@ -36,13 +30,32 @@ public class LevelMap {
     public LevelMap(@NonNull LevelMap map) {
         cols = map.cols;
         rows = map.rows;
-        mMap = map.mMap.clone();
         mPath = new ArrayList<>(map.mPath);
     }
 
     @NonNull
     public List<Vector2> getPath() {
         return mPath;
+    }
+
+    @NonNull
+    public int[] getMap() {
+        if (mMap != null) {
+            return mMap;
+        }
+
+        mMap = new int[cols * rows];
+        for (int col = 0; col < cols; col++) {
+            for (int row = 0; row < rows; row++) {
+                mMap[row * cols + col] = TILE_EMPTY;
+            }
+        }
+        for (Vector2 index : mPath) {
+            int col = (int) index.x;
+            int row = (int) index.y;
+            mMap[row * cols + col] = TILE_PATH;
+        }
+        return mMap;
     }
 
     public int getAtIndex(@NonNull Vector2 index) {
@@ -52,7 +65,7 @@ public class LevelMap {
     }
 
     public int getAtIndex(int col, int row) {
-        return mMap[row * cols + col];
+        return getMap()[row * cols + col];
     }
 
     public void setAtPosition(@NonNull Vector2 position, float tileSize, int value) {
@@ -69,7 +82,7 @@ public class LevelMap {
     }
 
     public void setAtIndex(int col, int row, int value) {
-        mMap[row * cols + col] = value;
+        getMap()[row * cols + col] = value;
     }
 
     @NonNull
@@ -82,6 +95,10 @@ public class LevelMap {
 
     @NonNull
     public Vector2 getPositionFromPath(@NonNull Game game, int pathIndex) {
+        if (pathIndex >= mPath.size()) {
+            pathIndex--;
+        }
+
         float startX = game.getTileSize() * (mPath.get(pathIndex).x + 0.5f);
         float startY = game.getTileSize() * (mPath.get(pathIndex).y + 0.5f);
 

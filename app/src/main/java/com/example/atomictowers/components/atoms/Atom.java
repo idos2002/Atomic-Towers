@@ -3,6 +3,7 @@ package com.example.atomictowers.components.atoms;
 import android.annotation.SuppressLint;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -49,6 +50,8 @@ public class Atom extends KineticComponent {
     private final BehaviorSubject<Integer> mColor = BehaviorSubject.createDefault(Color.BLACK);
     private final BehaviorSubject<Float> mRadius = BehaviorSubject.createDefault(0f);
 
+    private final boolean mIsLastAtom;
+
     public Atom(@NonNull Game game, int id, @Nullable Object data) {
         super(game, id, data);
         if (!(data instanceof Element)) {
@@ -66,6 +69,7 @@ public class Atom extends KineticComponent {
         }
 
         initAtomTypeFields(element);
+        mIsLastAtom = element.isLastAtom;
 
         mDrawable = new AtomDrawable(this, mCompositeDisposable);
 
@@ -94,6 +98,7 @@ public class Atom extends KineticComponent {
         mStrength = savedState.strength;
         mPathIndex = savedState.pathIndex;
         mPosition.onNext(savedState.position);
+        mIsLastAtom = savedState.isLastAtom;
 
         mDrawable = new AtomDrawable(this, mCompositeDisposable);
 
@@ -198,19 +203,27 @@ public class Atom extends KineticComponent {
 
         if (mAtomicNumber <= 0) {
             destroy();
-        } else if (
+        } else if (mStrength <= (mAtomicNumber - 1) * 2 * Game.DAMAGE_MULTIPLIER) {
             // If the strength is lower than or equal to the minimum strength
             // for this atomic number, lower the atomic number
-            mStrength <= (mAtomicNumber - 1) * 2 * Game.DAMAGE_MULTIPLIER
-        ) {
             changeElement();
         }
+    }
+
+    public boolean isLastAtom() {
+        return mIsLastAtom;
     }
 
     @Override
     public void destroy() {
         mSpeed = 0;
         mCompositeDisposable.dispose();
+
+        // IMPORTANT: Handle last atom!
+        if (mIsLastAtom) {
+            Log.i(TAG, "Game ended - last atom destroyed!");
+        }
+
         super.destroy();
     }
 
