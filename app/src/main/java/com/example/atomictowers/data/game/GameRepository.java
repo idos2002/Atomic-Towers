@@ -185,7 +185,16 @@ public class GameRepository {
     }
 
     @NonNull
-    public Completable setSaveGameState(@NonNull SavedGameState gameState) {
+    public Completable setSavedGameState(@Nullable SavedGameState gameState) {
+        if (gameState == null) {
+            return Completable.fromCallable(() -> {
+                writeInternalStorageFile(mApplicationContext, SAVED_GAME_STATE_FILENAME, "");
+                return Completable.complete();
+            })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread());
+        }
+
         return Completable.fromCallable(() -> {
             String gameStateJson = mGson.toJson(gameState);
             writeInternalStorageFile(mApplicationContext, SAVED_GAME_STATE_FILENAME, gameStateJson);
@@ -195,15 +204,25 @@ public class GameRepository {
             .observeOn(AndroidSchedulers.mainThread());
     }
 
-    @Nullable
+    @NonNull
     public Single<SavedGameState> getSavedGameState() {
+        return Single.fromCallable(() -> {
+            String savedStateJson = readInternalStorageFile(mApplicationContext, SAVED_GAME_STATE_FILENAME);
+            return mGson.fromJson(savedStateJson, SavedGameState.class);
+        })
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread());
+    }
+
+    @NonNull
+    public Single<Boolean> hasSavedGameState() {
         if (!internalStorageFileExists(mApplicationContext, SAVED_GAME_STATE_FILENAME)) {
-            return null;
+            return Single.just(false);
         }
 
         return Single.fromCallable(() -> {
             String savedStateJson = readInternalStorageFile(mApplicationContext, SAVED_GAME_STATE_FILENAME);
-            return mGson.fromJson(savedStateJson, SavedGameState.class);
+            return !savedStateJson.isEmpty();
         })
             .subscribeOn(Schedulers.io())
             .observeOn(AndroidSchedulers.mainThread());

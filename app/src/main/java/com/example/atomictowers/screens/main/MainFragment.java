@@ -26,15 +26,14 @@ import com.example.atomictowers.screens.main.MainFragmentDirections.ActionMainFr
 
 import java.util.Objects;
 
-import io.reactivex.Single;
-import io.reactivex.disposables.Disposable;
+import io.reactivex.disposables.CompositeDisposable;
 
 /**
  * The game's main menu.
  */
 public class MainFragment extends Fragment {
     private static final String TAG = MainFragment.class.getSimpleName();
-    private Disposable mGameStateDisposable;
+    private final CompositeDisposable mCompositeDisposable = new CompositeDisposable();
 
     @Nullable
     @Override
@@ -48,20 +47,18 @@ public class MainFragment extends Fragment {
             GameRepository repository = GameRepository.getInstance(
                 Objects.requireNonNull(getActivity()).getApplicationContext());
 
-            Single<SavedGameState> savedGameStateSingle = repository.getSavedGameState();
-            if (savedGameStateSingle == null) {
-                ActionMainFragmentToGameFragment action =
-                    MainFragmentDirections.actionMainFragmentToGameFragment(new SavedGameState(Level.LEVEL_ONE)); // TODO: Update this!
-                NavHostFragment.findNavController(this).navigate(action);
-            } else {
-                mGameStateDisposable = savedGameStateSingle.subscribe(savedGameState -> {
-                    if (savedGameState != null) {
-                        showResumeLastGameDialog(savedGameState);
-                    } else {
-                        throw new IllegalArgumentException("SavedGameState object cannot be null");
-                    }
-                }, Throwable::printStackTrace);
-            }
+            mCompositeDisposable.add(repository.hasSavedGameState().subscribe(hasSavedGameState -> {
+                if (hasSavedGameState) {
+                    mCompositeDisposable.add(repository.getSavedGameState().subscribe(
+                        this::showResumeLastGameDialog,
+                        Throwable::printStackTrace));
+                } else {
+                    ActionMainFragmentToGameFragment action =
+                        MainFragmentDirections.actionMainFragmentToGameFragment(
+                            new SavedGameState(Level.LEVEL_ONE)); // TODO: Update this!
+                    NavHostFragment.findNavController(this).navigate(action);
+                }
+            }, Throwable::printStackTrace));
         });
 
         mBinding.menuButton.setOnClickListener(this::showPopupMenu);
@@ -120,7 +117,8 @@ public class MainFragment extends Fragment {
 
         layout.findViewById(R.id.new_game_button).setOnClickListener(view -> {
             ActionMainFragmentToGameFragment action =
-                MainFragmentDirections.actionMainFragmentToGameFragment(new SavedGameState(Level.LEVEL_ONE)); // TODO: Update this!
+                MainFragmentDirections.actionMainFragmentToGameFragment(
+                    new SavedGameState(Level.LEVEL_ONE)); // TODO: Update this!
             NavHostFragment.findNavController(this).navigate(action);
             dialog.dismiss();
         });
@@ -131,8 +129,8 @@ public class MainFragment extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        if (!mGameStateDisposable.isDisposed()) {
-            mGameStateDisposable.dispose();
+        if (!mCompositeDisposable.isDisposed()) {
+            mCompositeDisposable.dispose();
         }
     }
 }

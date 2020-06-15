@@ -8,7 +8,9 @@ import android.util.SparseArray;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 
+import com.example.atomictowers.R;
 import com.example.atomictowers.components.atoms.Atom;
 import com.example.atomictowers.components.atoms.AtomSequencer;
 import com.example.atomictowers.components.towers.ElectronShooter;
@@ -77,7 +79,7 @@ public class Game {
     private String mSelectedTowerTypeKey;
 
 
-    private BehaviorSubject<Integer> mHealth = BehaviorSubject.createDefault(MAX_HEALTH);
+    private final BehaviorSubject<Integer> mHealth = BehaviorSubject.createDefault(MAX_HEALTH);
 
     public int getHealth() {
         return mHealth.getValue();
@@ -88,7 +90,7 @@ public class Game {
     }
 
 
-    private BehaviorSubject<Integer> mEnergy = BehaviorSubject.createDefault(0);
+    private final BehaviorSubject<Integer> mEnergy = BehaviorSubject.createDefault(0);
 
     public int getEnergy() {
         return mEnergy.getValue();
@@ -96,6 +98,13 @@ public class Game {
 
     public Observable<Integer> getEnergyObservable() {
         return mEnergy.hide();
+    }
+
+
+    private final BehaviorSubject<Integer> mGameEnded = BehaviorSubject.create();
+
+    public Observable<Integer> getGameEndedObservable() {
+        return mGameEnded.hide();
     }
 
 
@@ -339,6 +348,10 @@ public class Game {
 
     public void decreaseHealth(int atomStrength) {
         mHealth.onNext(mHealth.getValue() - atomStrength);
+
+        if (mHealth.getValue() <= 0) {
+            finish(R.string.game_lost_message);
+        }
     }
 
     public Observable<Pair<Atom, Vector2>> getAtomPositionObservable() {
@@ -349,8 +362,17 @@ public class Game {
         return mAtomSequencer.getNumberOfCreatedAtoms();
     }
 
-    public void finish() {
+    public void finish(@StringRes int gameEndedMessageStringId) {
+        mGameEnded.onNext(gameEndedMessageStringId);
         mCompositeDisposable.dispose();
         mAtomSequencer.destroy();
+    }
+
+    public boolean hasFinished() {
+        if (mGameEnded.getValue() == null) {
+            return false;
+        }
+        return mGameEnded.getValue() == R.string.game_won_message
+            || mGameEnded.getValue() == R.string.game_lost_message;
     }
 }

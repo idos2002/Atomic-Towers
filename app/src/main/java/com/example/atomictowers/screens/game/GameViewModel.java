@@ -8,6 +8,7 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
 import androidx.lifecycle.ViewModel;
 
+import com.example.atomictowers.R;
 import com.example.atomictowers.components.Game;
 import com.example.atomictowers.data.game.GameRepository;
 import com.example.atomictowers.data.game.TowerType;
@@ -38,6 +39,11 @@ public class GameViewModel extends ViewModel {
             .subscribeOn(AndroidSchedulers.mainThread())
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(energy -> mEnergy.setValue(energy), Throwable::printStackTrace));
+
+        mCompositeDisposable.add(game.getGameEndedObservable()
+            .subscribeOn(AndroidSchedulers.mainThread())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(messageId -> mGameEnded.setValue(messageId), Throwable::printStackTrace));
     }
 
     private MutableLiveData<Integer> mHealth = new MutableLiveData<>(Game.MAX_HEALTH);
@@ -52,6 +58,21 @@ public class GameViewModel extends ViewModel {
 
     public LiveData<Integer> getEnergy() {
         return mEnergy;
+    }
+
+
+    private MutableLiveData<Integer> mGameEnded = new MutableLiveData<>();
+
+    public LiveData<Integer> gameEnded() {
+        return mGameEnded;
+    }
+
+    public boolean hasGameEnded() {
+        if (mGameEnded.getValue() == null) {
+            return false;
+        }
+        return mGameEnded.getValue() == R.string.game_won_message
+            || mGameEnded.getValue() == R.string.game_lost_message;
     }
 
 
@@ -84,7 +105,12 @@ public class GameViewModel extends ViewModel {
     @Override
     protected void onCleared() {
         super.onCleared();
-        game.finish();
+        if (!game.hasFinished()) {
+            game.finish(0);
+        }
+        if (!mCompositeDisposable.isDisposed()) {
+            mCompositeDisposable.dispose();
+        }
         Log.d(TAG, TAG + "cleared");
     }
 }

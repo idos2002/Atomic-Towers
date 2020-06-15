@@ -8,6 +8,7 @@ import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.example.atomictowers.R;
 import com.example.atomictowers.components.Game;
 import com.example.atomictowers.components.KineticComponent;
 import com.example.atomictowers.data.game.Element;
@@ -64,8 +65,7 @@ public class Atom extends KineticComponent {
 
         mMap = getGame().getMap();
         if (mMap.getPath().isEmpty()) {
-            destroy();
-            getGame().finish();
+            throw new IllegalStateException("Map path is empty");
         }
 
         initAtomTypeFields(element);
@@ -89,8 +89,7 @@ public class Atom extends KineticComponent {
 
         mMap = getGame().getMap();
         if (mMap.getPath().isEmpty()) {
-            destroy();
-            getGame().finish();
+            throw new IllegalStateException("Map path is empty");
         }
 
         initAtomTypeFields(element);
@@ -219,8 +218,10 @@ public class Atom extends KineticComponent {
         mSpeed = 0;
         mCompositeDisposable.dispose();
 
-        // IMPORTANT: Handle last atom!
         if (mIsLastAtom) {
+            if (!getGame().hasFinished()) {
+                getGame().finish(R.string.game_won_message);
+            }
             Log.i(TAG, "Game ended - last atom destroyed!");
         }
 

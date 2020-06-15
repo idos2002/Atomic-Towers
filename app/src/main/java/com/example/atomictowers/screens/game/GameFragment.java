@@ -15,10 +15,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.Window;
+import android.widget.TextView;
 
 import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 import androidx.databinding.DataBindingUtil;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
@@ -125,10 +127,16 @@ public class GameFragment extends Fragment {
 
         mGamePausedSubscription = mViewModel.game.getGamePausedSubject()
             .subscribe(isPaused -> {
-                if (isPaused) {
+                if (isPaused && !mViewModel.hasGameEnded()) {
                     showGamePauseDialog();
                 }
             }, Throwable::printStackTrace);
+
+        mViewModel.gameEnded().observe(this, messageId -> {
+            if (messageId == R.string.game_won_message || messageId == R.string.game_lost_message) {
+                showGameEndedDialog(messageId);
+            }
+        });
     }
 
     private void showGamePauseDialog() {
@@ -150,6 +158,31 @@ public class GameFragment extends Fragment {
             dialog.dismiss();
             mBinding.gameView.resume();
         });
+
+        layout.findViewById(R.id.home_button).setOnClickListener(view -> {
+            dialog.dismiss();
+
+            NavHostFragment.findNavController(this).popBackStack(R.id.mainFragment, false);
+        });
+
+        dialog.show();
+    }
+
+    private void showGameEndedDialog(@StringRes int messageId) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+
+        LayoutInflater inflater = requireActivity().getLayoutInflater();
+        View layout = inflater.inflate(R.layout.dialog_game_ended, null);
+        ((TextView) layout.findViewById(R.id.game_ended_text)).setText(messageId);
+
+        builder.setView(layout);
+
+        Dialog dialog = builder.create();
+        Window dialogWindow = dialog.getWindow();
+        if (dialogWindow != null) {
+            dialogWindow.setBackgroundDrawable(new ColorDrawable(android.graphics.Color.TRANSPARENT));
+        }
+        dialog.setCancelable(false);
 
         layout.findViewById(R.id.home_button).setOnClickListener(view -> {
             dialog.dismiss();

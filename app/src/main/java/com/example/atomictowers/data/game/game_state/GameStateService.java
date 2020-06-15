@@ -23,21 +23,15 @@ public class GameStateService extends Service {
     public int onStartCommand(@Nullable Intent intent, int flags, int startId) {
         Log.i(TAG, "GameStateService started");
 
-        if (intent == null || intent.getExtras() == null) {
-            Log.e(TAG, "Intent passed to service is null or has no extras");
-            return START_NOT_STICKY;
+        SavedGameState savedGameState = null;
+        if (intent != null && intent.getExtras() != null) {
+            savedGameState = (SavedGameState) Objects.requireNonNull(intent.getExtras())
+                .getSerializable(GAME_STATE_INTENT_EXTRA_NAME);
         }
-        SavedGameState savedGameState = (SavedGameState) Objects.requireNonNull(intent.getExtras())
-            .getSerializable(GAME_STATE_INTENT_EXTRA_NAME);
 
-        if (savedGameState != null) {
-            saveStateDisposable = GameRepository.getInstance(getApplicationContext())
-                .setSaveGameState(savedGameState)
-                .subscribe(this::stopSelf, Throwable::printStackTrace);
-        } else {
-            Log.e(TAG, "intent passes to service is null");
-            return START_NOT_STICKY;
-        }
+        saveStateDisposable = GameRepository.getInstance(getApplicationContext())
+            .setSavedGameState(savedGameState)
+            .subscribe(this::stopSelf, Throwable::printStackTrace);
 
         return START_REDELIVER_INTENT;
     }

@@ -155,13 +155,15 @@ public class GameView extends SurfaceView implements Runnable, LifecycleObserver
 
     private void saveGameState() {
         Intent intent = new Intent(getContext(), GameStateService.class);
-        SavedGameState savedGameState = new SavedGameState(
-            mGame.getLevelNumber(),
-            mGame.getHealth(),
-            mGame.getEnergy(),
-            mGame.getNumberOfCreatedAtoms(),
-            mGame.getComponentsMap());
-        intent.putExtra(GameStateService.GAME_STATE_INTENT_EXTRA_NAME, savedGameState);
+        if (!mGame.hasFinished()) {
+            SavedGameState savedGameState = new SavedGameState(
+                mGame.getLevelNumber(),
+                mGame.getHealth(),
+                mGame.getEnergy(),
+                mGame.getNumberOfCreatedAtoms(),
+                mGame.getComponentsMap());
+            intent.putExtra(GameStateService.GAME_STATE_INTENT_EXTRA_NAME, savedGameState);
+        }
         getContext().startService(intent);
     }
 

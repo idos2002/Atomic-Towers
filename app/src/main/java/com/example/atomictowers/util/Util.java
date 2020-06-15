@@ -35,17 +35,17 @@ public final class Util {
     @NonNull
     public static String readInternalStorageFile(@NonNull Context context,
                                                  @NonNull String filename) throws IOException {
-        FileInputStream stringBuilder = context.openFileInput(filename);
-        StringBuilder buffer = new StringBuilder();
+        FileInputStream fileInputStream = context.openFileInput(filename);
+        StringBuilder stringBuilder = new StringBuilder();
 
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(stringBuilder))) {
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(fileInputStream))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                buffer.append(line);
+                stringBuilder.append(line);
             }
         }
 
-        return buffer.toString();
+        return stringBuilder.toString();
     }
 
     public static boolean internalStorageFileExists(@NonNull Context context, @NonNull String filename) {
