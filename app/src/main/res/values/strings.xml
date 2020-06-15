@@ -24,4 +24,8 @@
     <string name="new_game">New Game</string>
     <string name="game_won_message">Victory!</string>
     <string name="game_lost_message">Game Over</string>
+    <string name="not_enough_energy">Not Enough Energy</string>
+    <string name="energy_in_joules">%1$d J</string>
+    <string name="photonic_laser">Photonic Laser</string>
+    <string name="water">Water</string>
 </resources>

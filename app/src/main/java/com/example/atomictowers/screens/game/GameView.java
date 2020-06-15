@@ -46,9 +46,6 @@ public class GameView extends SurfaceView implements Runnable, LifecycleObserver
     public GameView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         mSurfaceHolder = getHolder();
-
-        // TODO: Change coordinates to pathMatrix or something else that describes
-        //  the background and its path for atoms
         Log.d(TAG, "GameView created");
     }
 

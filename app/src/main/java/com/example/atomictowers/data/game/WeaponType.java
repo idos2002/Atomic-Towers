@@ -12,12 +12,8 @@ import com.google.gson.annotations.SerializedName;
  * A data class that represents properties of a {@linkplain com.example.atomictowers.components.towers}
  */
 public class WeaponType {
-    private Atom mTargetAtom;
-
-    private Vector2 mStartingPosition;
-
-    // TODO: Implement tower leveling
-    public int level = 1;
+    private transient Vector2 mStartingPosition;
+    private transient Atom mTargetAtom;
 
     /**
      * The magnitude of the {@linkplain KineticWeapon KineticWeapon}'s
@@ -35,7 +31,6 @@ public class WeaponType {
     public float relativeDamage;
 
     WeaponType(@NonNull WeaponType weaponType) {
-        level = weaponType.level;
         speed = weaponType.speed;
         relativeDamage = weaponType.relativeDamage;
     }

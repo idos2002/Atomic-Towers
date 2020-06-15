@@ -60,7 +60,7 @@ public class SavedGameState implements Serializable {
     public int health = Game.MAX_HEALTH;
 
     @SerializedName("energy")
-    public int energy = 0;
+    public int energy = Game.INITIAL_ENERGY;
 
     @SerializedName("numberOfCreatedAtoms")
     public int numberOfCreatedAtoms = 0;

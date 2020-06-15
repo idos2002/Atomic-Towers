@@ -28,6 +28,7 @@ import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.atomictowers.MainActivity;
 import com.example.atomictowers.R;
+import com.example.atomictowers.components.Game;
 import com.example.atomictowers.data.game.GameRepository;
 import com.example.atomictowers.data.game.game_state.SavedGameState;
 import com.example.atomictowers.databinding.FragmentGameBinding;
@@ -117,6 +118,11 @@ public class GameFragment extends Fragment {
                 mBinding.setViewModel(mViewModel);
                 mBinding.gameView.setGame(mViewModel.game);
 
+                mBinding.electronShooterPriceText.setText(
+                    getString(R.string.energy_in_joules, Game.ELECTRON_SHOOTER_PRICE));
+                mBinding.photonicLaserPriceText.setText(
+                    getString(R.string.energy_in_joules, Game.PHOTONIC_LASER_PRICE));
+
                 setListeners();
             }
         });
@@ -134,6 +140,7 @@ public class GameFragment extends Fragment {
 
         mViewModel.gameEnded().observe(this, messageId -> {
             if (messageId == R.string.game_won_message || messageId == R.string.game_lost_message) {
+                mBinding.gameView.pause();
                 showGameEndedDialog(messageId);
             }
         });

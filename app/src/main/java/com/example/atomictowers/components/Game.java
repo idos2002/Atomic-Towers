@@ -45,6 +45,10 @@ public class Game {
     public static final int DAMAGE_MULTIPLIER = 100;
 
     public static final int MAX_HEALTH = 10 * DAMAGE_MULTIPLIER;
+    public static final int INITIAL_ENERGY = 15;
+
+    public static final int ELECTRON_SHOOTER_PRICE = 10;
+    public static final int PHOTONIC_LASER_PRICE = 15;
 
     public final GameRepository gameRepository;
     private final CompositeDisposable mCompositeDisposable = new CompositeDisposable();
@@ -86,11 +90,12 @@ public class Game {
     }
 
     public Observable<Integer> getHealthObservable() {
+        Log.i(TAG, "energy: " + mHealth.getValue());
         return mHealth.hide();
     }
 
 
-    private final BehaviorSubject<Integer> mEnergy = BehaviorSubject.createDefault(0);
+    private final BehaviorSubject<Integer> mEnergy = BehaviorSubject.createDefault(INITIAL_ENERGY);
 
     public int getEnergy() {
         return mEnergy.getValue();
@@ -242,18 +247,27 @@ public class Game {
         return mLevelMap;
     }
 
-    public void selectTowerType(@NonNull String selectedTowerTypeKey) {
+    public void selectTowerType(@Nullable String selectedTowerTypeKey) {
         mSelectedTowerTypeKey = selectedTowerTypeKey;
     }
 
     public void putTowerOnMap(@NonNull Vector2 tileIndex) {
         if (mSelectedTowerTypeKey != null && mLevelMap.getAtIndex(tileIndex) == LevelMap.TILE_EMPTY) {
+            String selectedTowerTypeKey = mSelectedTowerTypeKey;
+
+            if (mSelectedTowerTypeKey.equals(TowerType.ELECTRON_SHOOTER_TYPE_KEY)) {
+                decreaseEnergy(ELECTRON_SHOOTER_PRICE);
+
+            } else if (mSelectedTowerTypeKey.equals(TowerType.PHOTONIC_LASER_TYPE_KEY)) {
+                decreaseEnergy(PHOTONIC_LASER_PRICE);
+            }
+
             mLevelMap.setAtIndex(tileIndex, LevelMap.TILE_TOWER);
             mCompositeDisposable.add(
-                gameRepository.getTowerType(mSelectedTowerTypeKey)
+                gameRepository.getTowerType(selectedTowerTypeKey)
                     .subscribe(towerType -> {
                         towerType.setTileIndex(tileIndex);
-                        addComponent(convertTowerTypeKeyToClass(mSelectedTowerTypeKey), towerType);
+                        addComponent(convertTowerTypeKeyToClass(selectedTowerTypeKey), towerType);
                     }, Throwable::printStackTrace));
         }
     }
@@ -344,6 +358,10 @@ public class Game {
 
     public void increaseEnergy() {
         mEnergy.onNext(mEnergy.getValue() + 1);
+    }
+
+    public void decreaseEnergy(int energyDecrease) {
+        mEnergy.onNext(mEnergy.getValue() - energyDecrease);
     }
 
     public void decreaseHealth(int atomStrength) {

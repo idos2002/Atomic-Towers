@@ -38,7 +38,13 @@ public class GameViewModel extends ViewModel {
         mCompositeDisposable.add(game.getEnergyObservable()
             .subscribeOn(AndroidSchedulers.mainThread())
             .observeOn(AndroidSchedulers.mainThread())
-            .subscribe(energy -> mEnergy.setValue(energy), Throwable::printStackTrace));
+            .subscribe(energy -> {
+                // Check if energy decreased (due to buying a tower)
+                if (mEnergy.getValue() != null && energy < mEnergy.getValue()) {
+                    resetSelections();
+                }
+                mEnergy.setValue(energy);
+            }, Throwable::printStackTrace));
 
         mCompositeDisposable.add(game.getGameEndedObservable()
             .subscribeOn(AndroidSchedulers.mainThread())
@@ -54,7 +60,7 @@ public class GameViewModel extends ViewModel {
     }
 
 
-    private MutableLiveData<Integer> mEnergy = new MutableLiveData<>(0);
+    private MutableLiveData<Integer> mEnergy = new MutableLiveData<>(Game.INITIAL_ENERGY);
 
     public LiveData<Integer> getEnergy() {
         return mEnergy;
@@ -99,6 +105,13 @@ public class GameViewModel extends ViewModel {
         mPhotonicLaserSelected.setValue(true);
         mElectronShooterSelected.setValue(false);
         game.selectTowerType(TowerType.PHOTONIC_LASER_TYPE_KEY);
+    }
+
+
+    public void resetSelections() {
+        game.selectTowerType(null);
+        mElectronShooterSelected.setValue(false);
+        mPhotonicLaserSelected.setValue(false);
     }
 
 
