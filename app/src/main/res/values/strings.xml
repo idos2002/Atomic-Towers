@@ -28,4 +28,6 @@
     <string name="energy_in_joules">%1$d J</string>
     <string name="photonic_laser">Photonic Laser</string>
     <string name="water">Water</string>
+    <string name="instructions_content">Your mission is to protect the home base from those pesky atoms. You have at your limited disposal two types of towers, each of a different cost and capabilities.\n\nAtoms have different speeds and strengths depending on their atomic number, which you may notice by the chemical symbol on them. The towers strip the atoms from their protons, so you have to place the towers on the game screen strategically in order to destroy them.\n\nBe careful! Once an atom gets to the home base, it will decrease the base\'s health. When the health gets to zero, the game is lost. You win the game if you have succeeded destroying most atoms, without losing all of your health.\n\nYou may also notice the Energy indicator on the side panel - when an atom looses a proton, and when it gets fully destroyed, you get one energy point, measured in the energy unit Joule (J). You may use these energy points to buy towers for placement on the screen in order to win the game.\n\nHope you\'ll have fun, and good luck!
+    </string>
 </resources>
